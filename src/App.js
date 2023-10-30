@@ -1,23 +1,20 @@
-import logo from './logo.svg';
-import './App.css';
+import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
+import Home from "./Pages/Home";
+import Npb from "./Pages/Npb";
+import Ps from "./Pages/Ps";
+import Sidebar from "./components/Sidebar";
 
 function App() {
   return (
-    <div className="h-screen w-screen bg-blue-500">
-      <header className="h-full w-full text-white">
-        <img src={logo} className="w-1/2" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="flex flex-row min-h-full h-screen min-w-[350px]">
+    <Router>
+      <Sidebar />
+      <Routes>
+          <Route index element={<Home />} />
+          <Route path="/log" element={<Npb/>} />
+          <Route path="/settings" element={<Ps/>} />
+      </Routes>
+    </Router>
     </div>
   );
 }
