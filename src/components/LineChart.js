@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -10,7 +10,6 @@ import {
   Legend,
 } from "chart.js";
 import { Line } from "react-chartjs-2";
-const { faker } = require("@faker-js/faker");
 
 ChartJS.register(
   CategoryScale,
@@ -22,46 +21,78 @@ ChartJS.register(
   Legend
 );
 
-export const options = {
-  responsive: true,
-  plugins: {
-    legend: {
-      position: "top", // Position for the legend (top)
-      align: "end", // Alignment for the legend (left)
-    },
-    title: {
-      display: true,
-      text: "Timeline",
-      align: "start", // Alignment for the title (left)
-      font: {
-        size: 30, // Font size for the legend
-        family: "Helvetica", // Font family for the legend
+const LineChart = ({ title, packetData }) => {
+  const [chartData, setChartData] = useState({
+    labels: [],
+    datasets: [
+      {
+        label: title,
+        data: [],
+        borderColor: "rgb(255, 99, 132)",
+        backgroundColor: "rgba(255, 99, 132, 0.5)",
+      },
+    ],
+  });
+
+  useEffect(() => {
+    if (packetData && packetData.length > 0) {
+      const latestData = packetData.slice(-50); // Display only the latest 50 data points
+      const timeLabels = latestData.map((data) =>
+        new Date(data.time).toLocaleTimeString()
+      );
+      const httpValues = latestData.map((data) => data.value);
+
+      setChartData((prevData) => ({
+        ...prevData,
+        labels: timeLabels,
+        datasets: [
+          {
+            ...prevData.datasets[0],
+            data: httpValues,
+          },
+        ],
+      }));
+    }
+  }, [packetData]);
+
+  const options = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: "top",
+        align: "end",
+      },
+      title: {
+        display: true,
+        text: "Timeline",
+        align: "start",
+        font: {
+          size: 30,
+          family: "Helvetica",
+        },
       },
     },
-  },
+    scales: {
+      x: {
+        grid: {
+          display: false, // Hide x-axis grid
+        },
+      },
+      y: {
+        grid: {
+          display: true, // Show y-axis grid
+          color: "rgba(0, 0, 0, 0.1)", // Adjust the color of the horizontal lines
+        },
+      },
+    },
+  };
+
+  return (
+    <div>
+      <h3>{title}</h3>
+      <Line data={chartData} options={options} />
+    </div>
+  );
 };
 
-
-const labels = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-
-export const data = {
-  labels,
-  datasets: [
-    {
-      label: "Dataset 1",
-      data: labels.map(() => faker.datatype.number({ min: -1000, max: 1000 })),
-      borderColor: "rgb(255, 99, 132)",
-      backgroundColor: "rgba(255, 99, 132, 0.5)",
-    },
-    {
-      label: "Dataset 2",
-      data: labels.map(() => faker.datatype.number({ min: -1000, max: 1000 })),
-      borderColor: "rgb(53, 162, 235)",
-      backgroundColor: "rgba(53, 162, 235, 0.5)",
-    },
-  ],
-};
-
-export default function LineChart() {
-  return <Line options={options} data={data} />;
-}
+export default LineChart;
