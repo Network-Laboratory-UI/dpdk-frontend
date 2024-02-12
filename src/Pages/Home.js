@@ -1,59 +1,64 @@
 import React, { useEffect, useState } from "react";
-import NPBCard from "../components/NPBCard"; // Updated import statement
-import PolicyServerCard from "../components/PSCard"; // Updated import statement
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import NPBCard from "../components/NPBCard";
+import PolicyServerCard from "../components/PSCard";
+import AddNewDevice from "../components/AddNewDevice";
 
 const Home = () => {
-  const npbData = [
-    {
-      id: 1,
-      name: "Packet Broker 1 lagi kuy",
-      status: "Active",
-      location: "Jalan H Mean 1 No 1",
-    },
-    {
-      id: 2,
-      name: "Packet Broker 2",
-      status: "Inactive",
-      location: "Location 2",
-    },
-    {
-      id: 3,
-      name: "Packet Broker 3",
-      status: "Inactive",
-      location: "Location 3",
-    },
-    // Add more data as needed
-  ];
+  const navigateTo = useNavigate();
+  const [npbCards, setNpbCards] = useState([]);
+  const [policyServerCards, setPolicyServerCards] = useState([]);
+  const [isAddNewDeviceOpen, setIsAddNewDeviceOpen] = useState(false);
 
-  const policyServerData = [
-    {
-      id: 1,
-      name: "Policy Server 1",
-      status: "Active",
-      location: "Jalan Xyz 1 No 1",
-    },
-    {
-      id: 2,
-      name: "Policy Server 2 Test Untuk saya adalah hebat",
-      status: "Inactive",
-      location: "Location 2",
-    },
-    {
-      id: 3,
-      name: "Policy Server 3",
-      status: "Inactive",
-      location: "Location 3",
-    },
-    // Add more Policy Server data as needed
-  ];
+  useEffect(() => {
+    fetchData();
+  }, []);
 
-  const [npbCards, setNpbCards] = useState(npbData);
-  const [policyServerCards, setPolicyServerCards] = useState(policyServerData); // Add state for Policy Server
+  const fetchData = () => {
+    axios
+      .get("http://192.168.88.251:3000/npb/npbs")
+      .then((response) => {
+        const data = response.data;
+        setNpbCards(data);
+      })
+      .catch((error) => {
+        console.error("Error fetching NPB data: ", error);
+      });
+
+    axios
+      .get("http://192.168.88.251:3000/ps/pss")
+      .then((response) => {
+        const data = response.data;
+        setPolicyServerCards(data);
+      })
+      .catch((error) => {
+        console.error("Error fetching Policy Server data: ", error);
+      });
+  };
+
+  const openPopup = () => {
+    setIsAddNewDeviceOpen(true);
+  };
+
+  const closePopup = () => {
+    setIsAddNewDeviceOpen(false);
+  };
+
+  const handleNpbCardClick = (id) => {
+    navigateTo(`/npb/${id}`);
+  };
+
+  const handlePolicyServerCardClick = (id) => {
+    navigateTo(`/ps/${id}`);
+  };
+
+  const handleDeviceAdded = () => {
+    fetchData(); // Reload data after adding a new device
+  };
 
   return (
-    <div className="max-w-full">
-      {/* Header with packet broker details */}
+    <div className="max-w-full relative">
       <header>
         <div className="flex items-center space-x-1 ml-10 mt-6">
           <h2 className="text-gray-400 font-helvetica text-1 font-normal">
@@ -67,25 +72,51 @@ const Home = () => {
       <p className="text-gray-700 font-helvetica text-2 font-bold ml-10">
         Dashboard
       </p>
+      <button
+        onClick={openPopup}
+        className="ml-10 mt-5 hover:bg-red-500 bg-red-primary rounded-lg shadow-lg text-white font-bold py-2 px-4"
+      >
+        Add new Devices +
+      </button>
+
+      <AddNewDevice
+        isOpen={isAddNewDeviceOpen}
+        onClose={closePopup}
+        onDeviceAdded={handleDeviceAdded}
+      />
+
+      {/* Packet Broker section */}
       <div className="w-[416px] h-4 text-gray-700 text-2xl font-bold font-['Helvetica'] mt-6 ml-10">
         Packet Broker
       </div>
-      {/* Packet Broker row */}
+      <div className="ml-auto"></div>
       <div className="flex mt-7 ml-10 space-x-4">
         {npbCards.map((card) => (
-          <NPBCard key={card.id} {...card} />
+          <div
+            key={card.id}
+            className="card-container hover:cursor-pointer"
+            onClick={() => handleNpbCardClick(card.id)}
+          >
+            <NPBCard {...card} />
+          </div>
         ))}
       </div>
+
+      {/* Policy Server section */}
       <div className="w-[416px] h-4 text-gray-700 text-2xl font-bold font-['Helvetica'] mt-20 ml-10">
         Policy Server
       </div>
-      {/* Policy Server row */}
       <div className="flex mt-7 ml-10 space-x-4">
         {policyServerCards.map((card) => (
-          <PolicyServerCard key={card.id} {...card} />
+          <div
+            key={card.id}
+            className="card-container hover:cursor-pointer"
+            onClick={() => handlePolicyServerCardClick(card.id)}
+          >
+            <PolicyServerCard {...card} />
+          </div>
         ))}
       </div>
-      {/* Other components or content */}
     </div>
   );
 };

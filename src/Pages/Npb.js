@@ -2,8 +2,12 @@ import React, { useEffect, useState } from "react";
 import Card from "../components/Card";
 import LineChart from "../components/LineChart";
 import axios from "axios";
+import { useParams } from "react-router-dom";
 
 function Npb() {
+  // Retrieve the ID from the URL
+  const { id } = useParams();
+
   // State for packet broker data and packet data
   const [packetBroker, setPacketBroker] = useState({
     id: "",
@@ -20,9 +24,9 @@ function Npb() {
 
   // Fetch data from API
   useEffect(() => {
-    // Fetch packet broker data
+    // Fetch packet broker data based on the ID
     axios
-      .get("http://192.168.88.251:3000/npb/npbid/1")
+      .get(`http://192.168.88.251:3000/npb/npbid/${id}`)
       .then((response) => {
         const data = response.data;
         setPacketBroker({
@@ -35,17 +39,25 @@ function Npb() {
         console.error("Error fetching packet broker data: ", error);
       });
 
-    // Fetch packet data
+    // Fetch packet data based on the ID
     axios
-      .get("http://192.168.88.251:3000/npb/npb-packet/1")
+      .get(`http://192.168.88.251:3000/npb/npb-packet/${id}`)
       .then((response) => {
         const data = response.data;
-        setPacketData(data);
+        // Check if data is an array and not empty
+        if (Array.isArray(data) && data.length > 0) {
+          setPacketData(data);
+        } else {
+          // If data is empty, update packetData with the response message
+          setPacketData([{ message: "No Npb Packets found" }]);
+        }
       })
       .catch((error) => {
         console.error("Error fetching packet data: ", error);
+        // If there's an error, update packetData with an error message
+        setPacketData([{ message: "Error fetching packet data" }]);
       });
-  }, []);
+  }, [id]);
 
   // Calculate total counts
   useEffect(() => {
@@ -55,8 +67,12 @@ function Npb() {
     setHttpsCount(
       packetData.reduce((total, packet) => total + packet.https_count, 0)
     );
-    setTxCount(packetData.reduce((total, packet) => total + packet.tx_count, 0));
-    setRxCount(packetData.reduce((total, packet) => total + packet.rx_count, 0));
+    setTxCount(
+      packetData.reduce((total, packet) => total + packet.tx_count, 0)
+    );
+    setRxCount(
+      packetData.reduce((total, packet) => total + packet.rx_count, 0)
+    );
   }, [packetData]);
 
   return (
