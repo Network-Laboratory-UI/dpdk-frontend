@@ -1,31 +1,28 @@
 import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import Card from "../components/Card";
 import LineChart from "../components/LineChart";
 import axios from "axios";
 
 function Ps() {
-  // State for Policy Server  data and packet data
-  const [policyServer, setpolicyServer] = useState({
+  const { id } = useParams(); // Extract the parameter from the URL
+  const [policyServer, setPolicyServer] = useState({
     id: "",
     name: "",
     location: "",
   });
   const [packetData, setPacketData] = useState([]);
-
-  // State for counts
-  const [rstClient, setrstClient] = useState(0);
-  const [rstServer, setrstServer] = useState(0);
+  const [rstClient, setRstClient] = useState(0);
+  const [rstServer, setRstServer] = useState(0);
   const [txCount, setTxCount] = useState(0);
   const [rxCount, setRxCount] = useState(0);
 
-  // Fetch data from API
   useEffect(() => {
-    // Fetch Policy Server  data
     axios
-      .get("http://192.168.88.251:3000/ps/psid/1")
+      .get(`http://192.168.88.251:3000/ps/psid/${id}`) // Use the extracted parameter in the URL
       .then((response) => {
         const data = response.data;
-        setpolicyServer({
+        setPolicyServer({
           id: data.id,
           name: data.name,
           location: data.location,
@@ -35,24 +32,30 @@ function Ps() {
         console.error("Error fetching Policy Server data: ", error);
       });
 
-    // Fetch packet data
     axios
-      .get("http://192.168.88.251:3000/ps/ps-packet/1")
+      .get(`http://192.168.88.251:3000/ps/ps-packet/${id}`)
       .then((response) => {
         const data = response.data;
-        setPacketData(data);
+        // Check if data is an array and not empty
+        if (Array.isArray(data) && data.length > 0) {
+          setPacketData(data);
+        } else {
+          // If data is empty, update packetData with the response message
+          setPacketData([{ message: "No Policy Server Packets found" }]);
+        }
       })
       .catch((error) => {
         console.error("Error fetching packet data: ", error);
+        // If there's an error, update packetData with an error message
+        setPacketData([{ message: "Error fetching packet data" }]);
       });
-  }, []);
+  }, [id]);
 
-  // Calculate total counts
   useEffect(() => {
-    setrstClient(
+    setRstClient(
       packetData.reduce((total, packet) => total + packet.rst_client, 0)
     );
-    setrstServer(
+    setRstServer(
       packetData.reduce((total, packet) => total + packet.rst_server, 0)
     );
     setTxCount(
@@ -65,7 +68,6 @@ function Ps() {
 
   return (
     <div className="max-w-full">
-      {/* Header with Policy Server details */}
       <header>
         <div className="flex items-center space-x-1 ml-10 mt-6">
           <h2 className="text-gray-400 font-helvetica text-[1] font-normal">
@@ -89,7 +91,6 @@ function Ps() {
         </div>
       </header>
 
-      {/* Cards */}
       <div className="flex flex-row space-x-10 ml-10 mr-20">
         <div>
           <Card
@@ -120,7 +121,6 @@ function Ps() {
           />
         </div>
       </div>
-      {/* Charts */}
       <div className="mt-10 ml-10 shadow-sm">
         <LineChart
           title="Reset Client Hit"
