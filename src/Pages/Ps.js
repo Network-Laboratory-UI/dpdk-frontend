@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import Card from "../components/Card";
 import LineChart from "../components/LineChart";
 import axios from "axios";
+import generateConfigFileContent from "../components/GenerateConfigFileContent";
 
 function Ps() {
   const { id } = useParams(); // Extract the parameter from the URL
@@ -66,8 +67,47 @@ function Ps() {
     );
   }, [packetData]);
 
+  const handleDownloadConfig = () => {
+    axios
+      .get(`http://192.168.88.251:3000/npb/config/${id}`)
+      .then((response) => {
+        const { Id, timerPeriodStats, timerPeriodSend } = response.data;
+        const configFileContent = generateConfigFileContent(
+          Id,
+          timerPeriodStats,
+          timerPeriodSend
+        );
+        const blob = new Blob([configFileContent], { type: "text/plain" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", "config.cfg");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      })
+      .catch((error) => {
+        console.error("Error downloading config: ", error);
+      });
+  };
+
   return (
     <div className="max-w-full">
+      <div className="absolute top-0 right-0 mt-10 mr-10 flex items-center">
+        <button
+          onClick={handleDownloadConfig}
+          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded flex items-center"
+        >
+          <span className="mr-2">Download Config</span>
+          <img
+            src="/download_logo.svg"
+            alt="Download Icon"
+            className="h-5 w-5"
+            style={{ fill: "white" }}
+          />
+        </button>
+      </div>
       <header>
         <div className="flex items-center space-x-1 ml-10 mt-6">
           <h2 className="text-gray-400 font-helvetica text-[1] font-normal">

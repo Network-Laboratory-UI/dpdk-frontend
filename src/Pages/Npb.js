@@ -3,28 +3,22 @@ import Card from "../components/Card";
 import LineChart from "../components/LineChart";
 import axios from "axios";
 import { useParams } from "react-router-dom";
+import generateConfigFileContent from "../components/GenerateConfigFileContent"; // Import generateConfigFileContent
 
 function Npb() {
-  // Retrieve the ID from the URL
   const { id } = useParams();
-
-  // State for packet broker data and packet data
   const [packetBroker, setPacketBroker] = useState({
     id: "",
     name: "",
     location: "",
   });
   const [packetData, setPacketData] = useState([]);
-
-  // State for counts
   const [httpCount, setHttpCount] = useState(0);
   const [httpsCount, setHttpsCount] = useState(0);
   const [txCount, setTxCount] = useState(0);
   const [rxCount, setRxCount] = useState(0);
 
-  // Fetch data from API
   useEffect(() => {
-    // Fetch packet broker data based on the ID
     axios
       .get(`http://192.168.88.251:3000/npb/npbid/${id}`)
       .then((response) => {
@@ -39,27 +33,22 @@ function Npb() {
         console.error("Error fetching packet broker data: ", error);
       });
 
-    // Fetch packet data based on the ID
     axios
       .get(`http://192.168.88.251:3000/npb/npb-packet/${id}`)
       .then((response) => {
         const data = response.data;
-        // Check if data is an array and not empty
         if (Array.isArray(data) && data.length > 0) {
           setPacketData(data);
         } else {
-          // If data is empty, update packetData with the response message
           setPacketData([{ message: "No Npb Packets found" }]);
         }
       })
       .catch((error) => {
         console.error("Error fetching packet data: ", error);
-        // If there's an error, update packetData with an error message
         setPacketData([{ message: "Error fetching packet data" }]);
       });
   }, [id]);
 
-  // Calculate total counts
   useEffect(() => {
     setHttpCount(
       packetData.reduce((total, packet) => total + packet.http_count, 0)
@@ -75,9 +64,47 @@ function Npb() {
     );
   }, [packetData]);
 
+  const handleDownloadConfig = () => {
+    axios
+      .get(`http://192.168.88.251:3000/npb/config/${id}`)
+      .then((response) => {
+        const { Id, timerPeriodStats, timerPeriodSend } = response.data;
+        const configFileContent = generateConfigFileContent(
+          Id,
+          timerPeriodStats,
+          timerPeriodSend
+        );
+        const blob = new Blob([configFileContent], { type: "text/plain" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", "config.cfg");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      })
+      .catch((error) => {
+        console.error("Error downloading config: ", error);
+      });
+  };
+
   return (
     <div className="max-w-full">
-      {/* Header with packet broker details */}
+      <div className="absolute top-0 right-0 mt-10 mr-10 flex items-center">
+        <button
+          onClick={handleDownloadConfig}
+          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded flex items-center"
+        >
+          <span className="mr-2">Download Config</span>
+          <img
+            src="/download_logo.svg"
+            alt="Download Icon"
+            className="h-5 w-5"
+            style={{ fill: "white" }}
+          />
+        </button>
+      </div>
       <header>
         <div className="flex items-center space-x-1 ml-10 mt-6">
           <h2 className="text-gray-400 font-helvetica text-[1] font-normal">
@@ -100,8 +127,6 @@ function Npb() {
           Location: {packetBroker.location}
         </div>
       </header>
-
-      {/* Cards */}
       <div className="flex flex-row space-x-10 ml-10 mr-20">
         <div>
           <Card
@@ -132,7 +157,6 @@ function Npb() {
           />
         </div>
       </div>
-      {/* Charts */}
       <div className="mt-10 ml-10 shadow-sm">
         <LineChart
           title="HTTP Count"
