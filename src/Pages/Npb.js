@@ -20,7 +20,7 @@ function Npb() {
 
   useEffect(() => {
     axios
-      .get(`http://192.168.88.251:3000/npb/npbid/${id}`)
+      .get(`${process.env.REACT_APP_BASE_URL}/npb/npbid/${id}`)
       .then((response) => {
         const data = response.data;
         setPacketBroker({
@@ -34,7 +34,7 @@ function Npb() {
       });
 
     axios
-      .get(`http://192.168.88.251:3000/npb/npb-packet/${id}`)
+      .get(`${process.env.REACT_APP_BASE_URL}/npb/npb-packet/${id}`)
       .then((response) => {
         const data = response.data;
         if (Array.isArray(data) && data.length > 0) {
@@ -57,16 +57,16 @@ function Npb() {
       packetData.reduce((total, packet) => total + packet.https_count, 0)
     );
     setTxCount(
-      packetData.reduce((total, packet) => total + packet.tx_count, 0)
+      packetData.reduce((total, packet) => total + packet.tx_0_count, 0)
     );
     setRxCount(
-      packetData.reduce((total, packet) => total + packet.rx_count, 0)
+      packetData.reduce((total, packet) => total + packet.rx_1_count, 0)
     );
   }, [packetData]);
 
   const handleDownloadConfig = () => {
     axios
-      .get(`http://192.168.88.251:3000/npb/config/${id}`)
+      .get(`${process.env.REACT_APP_BASE_URL}/npb/config/${id}`)
       .then((response) => {
         const { Id, timerPeriodStats, timerPeriodSend } = response.data;
         const configFileContent = generateConfigFileContent(
@@ -180,7 +180,7 @@ function Npb() {
           title="TX Count"
           packetData={packetData.map((data) => ({
             time: data.time,
-            value: data.tx_count,
+            value: data.tx_0_count,
           }))}
         />
       </div>
@@ -189,7 +189,7 @@ function Npb() {
           title="RX Count"
           packetData={packetData.map((data) => ({
             time: data.time,
-            value: data.rx_count,
+            value: data.rx_1_count,
           }))}
         />
       </div>

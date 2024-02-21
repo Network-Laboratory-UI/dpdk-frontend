@@ -27,7 +27,7 @@ const AddNewDevice = ({ isOpen, onClose, onDeviceAdded }) => {
       }
 
       const npbResponse = await axios.post(
-        "http://192.168.88.251:3000/npb/createnpb",
+        `${process.env.REACT_APP_BASE_URL}/npb/createnpb`,
         { name, location }
       );
       const npbId = npbResponse.data.id; // Extract NPB ID from the response
@@ -59,7 +59,7 @@ const AddNewDevice = ({ isOpen, onClose, onDeviceAdded }) => {
       URL.revokeObjectURL(url);
 
       // Send data to the respective API based on the type of device
-      await axios.post("http://192.168.88.251:3000/ps/createps", {
+      await axios.post(`${process.env.REACT_APP_BASE_URL}/ps/createps`, {
         name,
         location,
       });
@@ -86,7 +86,10 @@ const AddNewDevice = ({ isOpen, onClose, onDeviceAdded }) => {
       };
 
       // Post the combined config data
-      await axios.post("http://192.168.88.251:3000/npb/config", configData);
+      await axios.post(
+        `${process.env.REACT_APP_BASE_URL}/npb/config`,
+        configData
+      );
 
       // Reload data after adding a new device
       onDeviceAdded();

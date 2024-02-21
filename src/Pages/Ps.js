@@ -20,7 +20,7 @@ function Ps() {
 
   useEffect(() => {
     axios
-      .get(`http://192.168.88.251:3000/ps/psid/${id}`) // Use the extracted parameter in the URL
+      .get(`${process.env.REACT_APP_BASE_URL}/ps/psid/${id}`) // Use the extracted parameter in the URL
       .then((response) => {
         const data = response.data;
         setPolicyServer({
@@ -34,7 +34,7 @@ function Ps() {
       });
 
     axios
-      .get(`http://192.168.88.251:3000/ps/ps-packet/${id}`)
+      .get(`${process.env.REACT_APP_BASE_URL}/ps/ps-packet/${id}`)
       .then((response) => {
         const data = response.data;
         // Check if data is an array and not empty
@@ -69,7 +69,7 @@ function Ps() {
 
   const handleDownloadConfig = () => {
     axios
-      .get(`http://192.168.88.251:3000/npb/config/${id}`)
+      .get(`${process.env.REACT_APP_BASE_URL}/npb/config/${id}`)
       .then((response) => {
         const { Id, timerPeriodStats, timerPeriodSend } = response.data;
         const configFileContent = generateConfigFileContent(

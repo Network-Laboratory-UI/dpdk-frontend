@@ -17,7 +17,7 @@ const Home = () => {
 
   const fetchData = () => {
     axios
-      .get("http://192.168.88.251:3000/npb/npbs")
+      .get(`${process.env.REACT_APP_BASE_URL}/npb/npbs`)
       .then((response) => {
         const data = response.data;
         setNpbCards(data);
@@ -27,7 +27,7 @@ const Home = () => {
       });
 
     axios
-      .get("http://192.168.88.251:3000/ps/pss")
+      .get(`${process.env.REACT_APP_BASE_URL}/ps/pss`)
       .then((response) => {
         const data = response.data;
         setPolicyServerCards(data);
