@@ -5,7 +5,7 @@ function Sidebar() {
   const navigateTo = useNavigate();
 
   return (
-    <div className="fixed top-0 bg-blue-primary h-screen text-white font-helvetica overflow-y-auto">
+    <div className="fixed top-0 bg-blue-primary h-screen w-2 text-white font-helvetica">
       <div className="flex items-center justify-center p-4">
         <svg
           xmlns="http://www.w3.org/2000/svg"
