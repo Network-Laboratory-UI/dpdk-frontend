@@ -58,9 +58,9 @@ const Home = () => {
   };
 
   return (
-    <div className="max-w-full relative">
+    <div className="relative">
       <header>
-        <div className="flex items-center space-x-1 ml-10 mt-6">
+        <div className="flex items-center space-x-1 ml-10 mt-3">
           <h2 className="text-gray-400 font-helvetica text-1 font-normal">
             Pages
           </h2>
@@ -74,7 +74,7 @@ const Home = () => {
       </p>
       <button
         onClick={openPopup}
-        className="ml-10 mt-5 hover:bg-red-500 bg-red-primary rounded-lg shadow-lg text-white font-bold py-2 px-4"
+        className="ml-10 mt-2 hover:bg-red-500 bg-red-primary rounded-lg shadow-lg text-white font-bold py-2 px-4"
       >
         Add new Devices +
       </button>
@@ -86,11 +86,11 @@ const Home = () => {
       />
 
       {/* Packet Broker section */}
-      <div className="w-[416px] h-4 text-gray-700 text-2xl font-bold font-['Helvetica'] mt-6 ml-10">
+      <div className="w-[416px] h-4 text-gray-700 text-2xl font-bold font-['Helvetica'] mt-3 ml-10">
         Packet Broker
       </div>
       <div className="ml-auto"></div>
-      <div className="flex mt-7 ml-10 space-x-4">
+      <div className="flex mt-5 ml-10 space-x-4">
         {npbCards.map((card) => (
           <div
             key={card.id}
@@ -103,10 +103,10 @@ const Home = () => {
       </div>
 
       {/* Policy Server section */}
-      <div className="w-[416px] h-4 text-gray-700 text-2xl font-bold font-['Helvetica'] mt-20 ml-10">
+      <div className="w-[416px] text-gray-700 text-2xl font-bold font-['Helvetica'] mt-20 ml-10">
         Policy Server
       </div>
-      <div className="flex mt-7 ml-10 space-x-4">
+      <div className="flex mt-2 ml-10 space-x-4">
         {policyServerCards.map((card) => (
           <div
             key={card.id}

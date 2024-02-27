@@ -38,7 +38,18 @@ function Npb() {
       .then((response) => {
         const data = response.data;
         if (Array.isArray(data) && data.length > 0) {
-          setPacketData(data);
+          // Convert UTC datetime to local time for each packet
+          const localData = data.map((packet) => {
+            // Parse the UTC date string manually
+            const utcDate = new Date(packet.time);
+            // Convert UTC date to local date string
+            const localDateString = utcDate.toLocaleString();
+            return {
+              ...packet,
+              time: localDateString,
+            };
+          });
+          setPacketData(localData);
         } else {
           setPacketData([{ message: "No Npb Packets found" }]);
         }
@@ -90,7 +101,7 @@ function Npb() {
   };
 
   return (
-    <div className="max-w-full">
+    <div className="relative w-screen">
       <div className="absolute top-0 right-0 mt-10 mr-10 flex items-center">
         <button
           onClick={handleDownloadConfig}
@@ -100,13 +111,13 @@ function Npb() {
           <img
             src="/download_logo.svg"
             alt="Download Icon"
-            className="h-5 w-5"
+            className="h-5 w-1"
             style={{ fill: "white" }}
           />
         </button>
       </div>
       <header>
-        <div className="flex items-center space-x-1 ml-10 mt-6">
+        <div className="flex items-center space-x-1 ml-10 mt-3">
           <h2 className="text-gray-400 font-helvetica text-[1] font-normal">
             Pages
           </h2>
@@ -117,17 +128,17 @@ function Npb() {
         <p className="text-gray-700 font-helvetica text-[2] font-bold ml-10">
           Status
         </p>
-        <div className="w-[416px] h-4 text-gray-700 text-2xl font-bold font-['Helvetica'] mt-6 ml-10">
+        <div className="w-4 h-4 text-gray-700 text-2xl font-bold font-['Helvetica'] mt-3 ml-10">
           Packet Broker - {packetBroker.id}
         </div>
-        <div className="w-[416px] h-4 text-gray-700 text-xl font-normal font-['Helvetica'] mt-4 ml-10">
+        <div className="w-4 h-4 text-gray-700 text-xl font-normal font-['Helvetica'] mt-4 ml-10">
           {packetBroker.name}
         </div>
         <div className="text-gray-700 text-base font-normal font-['Helvetica'] mt-4 ml-10 italic">
           Location: {packetBroker.location}
         </div>
       </header>
-      <div className="flex flex-row space-x-10 ml-10 mr-20">
+      <div className="flex flex-row space-x-10 ml-10 mr-10">
         <div>
           <Card
             hitType="HTTP Count"
@@ -157,7 +168,7 @@ function Npb() {
           />
         </div>
       </div>
-      <div className="mt-10 ml-10 shadow-sm">
+      <div className="mt-10 ml-10 mr-10 shadow-sm">
         <LineChart
           title="HTTP Count"
           packetData={packetData.map((data) => ({
@@ -166,7 +177,7 @@ function Npb() {
           }))}
         />
       </div>
-      <div className="mt-10 ml-10 shadow-sm">
+      <div className="mt-10 ml-10 mr-10 shadow-sm">
         <LineChart
           title="HTTPS Count"
           packetData={packetData.map((data) => ({
@@ -175,7 +186,7 @@ function Npb() {
           }))}
         />
       </div>
-      <div className="mt-10 ml-10 shadow-sm">
+      <div className="mt-10 ml-10 mr-10 shadow-sm">
         <LineChart
           title="TX Count"
           packetData={packetData.map((data) => ({
@@ -184,7 +195,7 @@ function Npb() {
           }))}
         />
       </div>
-      <div className="mt-10 ml-10 shadow-sm">
+      <div className="mt-10 ml-10 mr-10 mb-20 shadow-sm">
         <LineChart
           title="RX Count"
           packetData={packetData.map((data) => ({

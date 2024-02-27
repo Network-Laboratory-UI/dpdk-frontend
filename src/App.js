@@ -6,9 +6,9 @@ import Sidebar from "./components/Sidebar";
 
 function App() {
   return (
-    <div className="flex flex-row min-h-full h-screen min-w-[350px]">
+    <div className="flex flex-row">
       <Router>
-        <Sidebar />
+        <Sidebar className="flex-grow" /> {/* Added flex-grow class */}
         <Routes>
           <Route index element={<Home />} />
           <Route path="/npb" element={<Npb />} />

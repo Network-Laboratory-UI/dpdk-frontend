@@ -4,6 +4,7 @@ import Card from "../components/Card";
 import LineChart from "../components/LineChart";
 import axios from "axios";
 import generateConfigFileContent from "../components/GenerateConfigFileContent";
+import BlockedListTable from "../components/BlockedListTable";
 
 function Ps() {
   const { id } = useParams(); // Extract the parameter from the URL
@@ -93,7 +94,7 @@ function Ps() {
   };
 
   return (
-    <div className="max-w-full">
+    <div className="max-w-screen w-screen">
       <div className="absolute top-0 right-0 mt-10 mr-10 flex items-center">
         <button
           onClick={handleDownloadConfig}
@@ -196,6 +197,10 @@ function Ps() {
             value: data.rx_count,
           }))}
         />
+      </div>
+      {/* Render BlockedListTable component and pass the id */}
+      <div className="mt-10 ml-10 shadow-sm">
+        <BlockedListTable id={id} />
       </div>
     </div>
   );
