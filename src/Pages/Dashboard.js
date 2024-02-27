@@ -5,10 +5,10 @@ import Sidebar from "../components/Sidebar";
 const Dashboard = () => {
   return (
     <div className="flex">
-      <div className="w-1/5">
+      <div className="w-1/6">
         <Sidebar/>
       </div>
-      <div className="w-4/5">
+      <div className="w-5/6">
         <Outlet/>
       </div>
     </div>
