@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import Card from "../components/Card";
 import LineChart from "../components/LineChart";
 import axios from "axios";
@@ -7,7 +7,9 @@ import generateConfigFileContent from "../components/GenerateConfigFileContent";
 import BlockedListTable from "../components/BlockedListTable";
 
 function Ps() {
-  const { id } = useParams(); // Extract the parameter from the URL
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const id = parseInt(searchParams.get("id"), 10);
   const [policyServer, setPolicyServer] = useState({
     id: "",
     name: "",
