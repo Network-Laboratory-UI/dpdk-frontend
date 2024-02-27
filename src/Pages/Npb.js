@@ -2,11 +2,13 @@ import React, { useEffect, useState } from "react";
 import Card from "../components/Card";
 import LineChart from "../components/LineChart";
 import axios from "axios";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import generateConfigFileContent from "../components/GenerateConfigFileContent"; // Import generateConfigFileContent
 
 function Npb() {
-  const { id } = useParams();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const id = parseInt(searchParams.get("id"), 10);
   const [packetBroker, setPacketBroker] = useState({
     id: "",
     name: "",

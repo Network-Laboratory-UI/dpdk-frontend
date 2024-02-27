@@ -46,11 +46,11 @@ const Home = () => {
   };
 
   const handleNpbCardClick = (id) => {
-    navigateTo(`/npb/${id}`);
+    navigateTo(`npb?id=${id}`);
   };
 
   const handlePolicyServerCardClick = (id) => {
-    navigateTo(`/ps/${id}`);
+    navigateTo(`ps?id=${id}`);
   };
 
   const handleDeviceAdded = () => {
