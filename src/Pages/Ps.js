@@ -96,7 +96,7 @@ function Ps() {
   };
 
   return (
-    <div className="max-w-screen w-screen">
+    <div className="relative">
       <div className="absolute top-0 right-0 mt-10 mr-10 flex items-center">
         <button
           onClick={handleDownloadConfig}
@@ -112,7 +112,7 @@ function Ps() {
         </button>
       </div>
       <header>
-        <div className="flex items-center space-x-1 ml-10 mt-6">
+        <div className="flex items-center   mt-6">
           <h2 className="text-gray-400 font-helvetica text-[1] font-normal">
             Pages
           </h2>
@@ -120,43 +120,43 @@ function Ps() {
             / Dashboard
           </h2>
         </div>
-        <p className="text-gray-700 font-helvetica text-[2] font-bold ml-10">
+        <p className="text-gray-700 font-helvetica text-[2] font-bold ">
           Status
         </p>
-        <div className="w-[416px] h-4 text-gray-700 text-2xl font-bold font-['Helvetica'] mt-6 ml-10">
+        <div className="w-[416px] h-4 text-gray-700 text-2xl font-bold font-['Helvetica'] mt-6 ">
           Policy Server - {policyServer.id}
         </div>
-        <div className="w-[416px] h-4 text-gray-700 text-xl font-normal font-['Helvetica'] mt-4 ml-10">
+        <div className="w-[416px] h-4 text-gray-700 text-xl font-normal font-['Helvetica'] mt-4 ">
           {policyServer.name}
         </div>
-        <div className="text-gray-700 text-base font-normal font-['Helvetica'] mt-4 ml-10 italic">
+        <div className="text-gray-700 text-base font-normal font-['Helvetica'] mt-4  italic">
           Location: {policyServer.location}
         </div>
       </header>
 
-      <div className="flex flex-row space-x-10 ml-10 mr-20">
-        <div>
+      <div className="flex flex-row   mr-20">
+        <div  className="mr-2">
           <Card
             hitType="Reset Client Hit"
             number={rstClient.toString()}
             packet="Packet"
           />
         </div>
-        <div>
+        <div  className="mr-2">
           <Card
             hitType="Reset Server Hit"
             number={rstServer.toString()}
             packet="Packet"
           />
         </div>
-        <div>
+        <div className="mr-2">
           <Card
             hitType="TX Count"
             number={txCount.toString()}
             packet="Packet"
           />
         </div>
-        <div>
+        <div className="mr-2">
           <Card
             hitType="RX Count"
             number={rxCount.toString()}
@@ -164,7 +164,7 @@ function Ps() {
           />
         </div>
       </div>
-      <div className="mt-10 ml-10 shadow-sm">
+      <div className="mt-10  shadow-sm">
         <LineChart
           title="Reset Client Hit"
           packetData={packetData.map((data) => ({
@@ -173,7 +173,7 @@ function Ps() {
           }))}
         />
       </div>
-      <div className="mt-10 ml-10 shadow-sm">
+      <div className="mt-10  shadow-sm">
         <LineChart
           title="Reset Server Hit"
           packetData={packetData.map((data) => ({
@@ -182,7 +182,7 @@ function Ps() {
           }))}
         />
       </div>
-      <div className="mt-10 ml-10 shadow-sm">
+      <div className="mt-10  shadow-sm">
         <LineChart
           title="TX Count"
           packetData={packetData.map((data) => ({
@@ -191,7 +191,7 @@ function Ps() {
           }))}
         />
       </div>
-      <div className="mt-10 ml-10 shadow-sm">
+      <div className="mt-10  shadow-sm">
         <LineChart
           title="RX Count"
           packetData={packetData.map((data) => ({
@@ -201,7 +201,7 @@ function Ps() {
         />
       </div>
       {/* Render BlockedListTable component and pass the id */}
-      <div className="mt-10 ml-10 shadow-sm">
+      <div className="mt-10  shadow-sm">
         <BlockedListTable id={id} />
       </div>
     </div>
