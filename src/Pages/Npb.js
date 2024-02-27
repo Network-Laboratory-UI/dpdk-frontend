@@ -103,7 +103,7 @@ function Npb() {
   };
 
   return (
-    <div className="relative">
+    <div className="relative ml-3">
       <div className="absolute top-0 right-0 mt-10 mr-10 flex">
         <button
           onClick={handleDownloadConfig}
