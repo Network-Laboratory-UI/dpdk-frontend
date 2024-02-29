@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import Card from "../components/Card";
 import LineChart from "../components/LineChart";
 import axios from "axios";
 import generateConfigFileContent from "../components/GenerateConfigFileContent";
+import ProgressSpinner from "../components/ProgressSpinner"; // Import ProgressSpinner component
 import BlockedListTable from "../components/BlockedListTable";
 
 function Ps() {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const id = parseInt(searchParams.get("id"), 10);
+  const [loading, setLoading] = useState(true); // Loading state
   const [policyServer, setPolicyServer] = useState({
     id: "",
     name: "",
@@ -22,8 +24,9 @@ function Ps() {
   const [rxCount, setRxCount] = useState(0);
 
   useEffect(() => {
+    setLoading(true); // Set loading to true when fetching data starts
     axios
-      .get(`${process.env.REACT_APP_BASE_URL}/ps/psid/${id}`) // Use the extracted parameter in the URL
+      .get(`${process.env.REACT_APP_BASE_URL}/ps/psid/${id}`)
       .then((response) => {
         const data = response.data;
         setPolicyServer({
@@ -47,11 +50,13 @@ function Ps() {
           // If data is empty, update packetData with the response message
           setPacketData([{ message: "No Policy Server Packets found" }]);
         }
+        setLoading(false); // Set loading to false when data fetching is complete
       })
       .catch((error) => {
         console.error("Error fetching packet data: ", error);
         // If there's an error, update packetData with an error message
         setPacketData([{ message: "Error fetching packet data" }]);
+        setLoading(false); // Set loading to false if there's an error
       });
   }, [id]);
 
@@ -97,113 +102,123 @@ function Ps() {
 
   return (
     <div className="relative ml-3">
-      <div className="absolute top-0 right-0 mt-10 mr-10 flex items-center">
-        <button
-          onClick={handleDownloadConfig}
-          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded flex items-center"
-        >
-          <span className="mr-2">Download Config</span>
-          <img
-            src="/download_logo.svg"
-            alt="Download Icon"
-            className="h-5 w-5"
-            style={{ fill: "white" }}
-          />
-        </button>
-      </div>
-      <header>
-        <div className="flex items-center   mt-6">
-          <h2 className="text-gray-400 font-helvetica text-[1] font-normal">
-            Pages
-          </h2>
-          <h2 className="text-black font-helvetica text-[1] font-normal">
-            / Dashboard
-          </h2>
+      {/* Loading spinner in the center */}
+      {loading && (
+        <div className="fixed inset-0 flex items-center justify-center">
+          <ProgressSpinner />
         </div>
-        <p className="text-gray-700 font-helvetica text-[2] font-bold ">
-          Status
-        </p>
-        <div className="w-[416px] h-4 text-gray-700 text-2xl font-bold font-['Helvetica'] mt-6 ">
-          Policy Server - {policyServer.id}
-        </div>
-        <div className="w-[416px] h-4 text-gray-700 text-xl font-normal font-['Helvetica'] mt-4 ">
-          {policyServer.name}
-        </div>
-        <div className="text-gray-700 text-base font-normal font-['Helvetica'] mt-4  italic">
-          Location: {policyServer.location}
-        </div>
-      </header>
+      )}
+      {!loading && (
+        <>
+          <div className="absolute top-0 right-0 mt-10 mr-10 flex">
+            <button
+              onClick={handleDownloadConfig}
+              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded flex items-center font-['Helvetica'] font-bold"
+            >
+              <span className="mr-2">Download Config</span>
+              <img
+                src="/download_logo.svg"
+                alt="Download Icon"
+                className="h-5"
+                style={{ fill: "white" }}
+              />
+            </button>
+          </div>
+          <header>
+            <div className="flex items-center space-x-1 mt-3">
+              <p className="text-gray-400 font-['Helvetica'] text-lg font-normal">
+                Pages
+              </p>
+              <p className="text-gray-600 font-['Helvetica'] text-lg font-bold">
+                / Home
+              </p>
+            </div>
+            <p className="text-gray-700 font-['Helvetica'] text-lg font-bold ">
+              Status
+            </p>
+            <div className="w-4 h-4 text-gray-700 text-2xl font-bold font-['Helvetica'] mt-3 ">
+              Policy Server- {policyServer.id}
+            </div>
+            <div className="w-4 h-4 text-gray-700 text-xl font-normal font-['Helvetica'] mt-4">
+              {policyServer.name}
+            </div>
+            <div className="text-gray-700 text-base font-normal font-['Helvetica'] mt-4 italic">
+              Location: {policyServer.location}
+            </div>
+          </header>
 
-      <div className="flex flex-row   mr-20">
-        <div  className="mr-2">
-          <Card
-            hitType="Reset Client Hit"
-            number={rstClient.toString()}
-            packet="Packet"
-          />
-        </div>
-        <div  className="mr-2">
-          <Card
-            hitType="Reset Server Hit"
-            number={rstServer.toString()}
-            packet="Packet"
-          />
-        </div>
-        <div className="mr-2">
-          <Card
-            hitType="TX Count"
-            number={txCount.toString()}
-            packet="Packet"
-          />
-        </div>
-        <div className="mr-2">
-          <Card
-            hitType="RX Count"
-            number={rxCount.toString()}
-            packet="Packet"
-          />
-        </div>
-      </div>
-      <div className="mt-10  shadow-sm">
-        <LineChart
-          title="Reset Client Hit"
-          packetData={packetData.map((data) => ({
-            time: data.time,
-            value: data.rst_client,
-          }))}
-        />
-      </div>
-      <div className="mt-10  shadow-sm">
-        <LineChart
-          title="Reset Server Hit"
-          packetData={packetData.map((data) => ({
-            time: data.time,
-            value: data.rst_server,
-          }))}
-        />
-      </div>
-      <div className="mt-10  shadow-sm">
-        <LineChart
-          title="TX Count"
-          packetData={packetData.map((data) => ({
-            time: data.time,
-            value: data.tx_count,
-          }))}
-        />
-      </div>
-      <div className="mt-10  shadow-sm">
-        <LineChart
-          title="RX Count"
-          packetData={packetData.map((data) => ({
-            time: data.time,
-            value: data.rx_count,
-          }))}
-        />
-      </div>
-      {/* Render BlockedListTable component and pass the id */}
-      <div className="mt-10  shadow-sm">
-        <BlockedListTable id={id} />
-      </div>
+          <div className="flex flex-row   mr-20">
+            <div className="mr-2">
+              <Card
+                hitType="Reset Client Hit"
+                number={rstClient.toString()}
+                packet="Packet"
+              />
+            </div>
+            <div className="mr-2">
+              <Card
+                hitType="Reset Server Hit"
+                number={rstServer.toString()}
+                packet="Packet"
+              />
+            </div>
+            <div className="mr-2">
+              <Card
+                hitType="TX Count"
+                number={txCount.toString()}
+                packet="Packet"
+              />
+            </div>
+            <div className="mr-2">
+              <Card
+                hitType="RX Count"
+                number={rxCount.toString()}
+                packet="Packet"
+              />
+            </div>
+          </div>
+          <div className="mt-10  shadow-sm">
+            <LineChart
+              title="Reset Client Hit"
+              packetData={packetData.map((data) => ({
+                time: data.time,
+                value: data.rst_client,
+              }))}
+            />
+          </div>
+          <div className="mt-10  shadow-sm">
+            <LineChart
+              title="Reset Server Hit"
+              packetData={packetData.map((data) => ({
+                time: data.time,
+                value: data.rst_server,
+              }))}
+            />
+          </div>
+          <div className="mt-10  shadow-sm">
+            <LineChart
+              title="TX Count"
+              packetData={packetData.map((data) => ({
+                time: data.time,
+                value: data.tx_count,
+              }))}
+            />
+          </div>
+          <div className="mt-10  shadow-sm">
+            <LineChart
+              title="RX Count"
+              packetData={packetData.map((data) => ({
+                time: data.time,
+                value: data.rx_count,
+              }))}
+            />
+          </div>
+          {/* Render BlockedListTable component and pass the id */}
+          <div className="mt-10  shadow-sm">
+            <BlockedListTable id={id} />
+          </div>
+        </>
+      )}
     </div>
   );
 }

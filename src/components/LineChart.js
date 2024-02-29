@@ -30,13 +30,14 @@ const LineChart = ({ title, packetData }) => {
         data: [],
         borderColor: "rgb(255, 99, 132)",
         backgroundColor: "rgba(255, 99, 132, 0.5)",
+        cubicInterpolationMode: "monotone", // Rounded lines
       },
     ],
   });
 
   useEffect(() => {
     if (packetData && packetData.length > 0) {
-      const latestData = packetData.slice(-50); // Display only the latest 50 data points
+      const latestData = packetData.slice(-30); // Display only the latest 50 data points
       const timeLabels = latestData.map((data) =>
         new Date(data.time).toLocaleTimeString()
       );

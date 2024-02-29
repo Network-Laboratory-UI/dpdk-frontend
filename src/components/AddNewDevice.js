@@ -105,57 +105,74 @@ const AddNewDevice = ({ isOpen, onClose, onDeviceAdded }) => {
 
   return (
     <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50">
-      <div className="bg-white p-8 rounded-lg w-96">
+      <div className="bg-white p-8 rounded-lg w-screen max-w-screen-sm">
         {currentPage === 1 && (
           <>
             <h2 className="text-2xl font-bold mb-4">Add New Device</h2>
             <form onSubmit={handleSubmit}>
+              {/* Form fields with adjusted width and height */}
               <div className="mb-4">
-                <label htmlFor="name" className="block font-bold mb-1">
+                <label
+                  htmlFor="name"
+                  className="block font-normal mb-1 font-['Helvetica']"
+                >
                   Name:
                 </label>
                 <input
                   type="text"
                   id="name"
-                  className="border p-1 w-full"
+                  className="border p-2 w-full rounded-md font-['Helvetica']" // Adjusted height
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g. University Campus"
                 />
               </div>
               <div className="mb-4">
-                <label htmlFor="location" className="block font-bold mb-1">
+                <label
+                  htmlFor="location"
+                  className="block font-normal mb-1 font-['Helvetica']"
+                >
                   Location:
                 </label>
                 <input
                   type="text"
                   id="location"
-                  className="border p-1 w-full"
+                  className="border p-2 w-full rounded-md font-['Helvetica']" // Adjusted height
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
+                  placeholder="e.g. Building A, Floor 1, Room 101"
                 />
               </div>
               <div className="mb-4">
-                <label htmlFor="periodStats" className="block font-bold mb-1">
+                <label
+                  htmlFor="periodStats"
+                  className="block font-normal mb- font-['Helvetica']"
+                >
                   Period Stats:
                 </label>
                 <input
                   type="number"
                   id="periodStats"
-                  className="border p-1 w-full"
+                  className="border p-2 w-full rounded-md font-['Helvetica']" // Adjusted height
                   value={periodStats}
                   onChange={(e) => setPeriodStats(e.target.value)}
+                  placeholder="Seconds in which data will be recorded (e.g data/2 seconds)"
                 />
               </div>
               <div className="mb-4">
-                <label htmlFor="periodSend" className="block font-bold mb-1">
+                <label
+                  htmlFor="periodSend"
+                  className="block font-normal mb-1 font-['Helvetica']"
+                >
                   Period Send:
                 </label>
                 <input
                   type="number"
                   id="periodSend"
-                  className="border p-1 w-full"
+                  className="border p-2 w-full rounded-md font-['Helvetica']" // Adjusted height
                   value={periodSend}
                   onChange={(e) => setPeriodSend(e.target.value)}
+                  placeholder="Minute in which data will be sent (e.g every 2 minutes)"
                 />
               </div>
               <div className="flex justify-between">
@@ -168,7 +185,7 @@ const AddNewDevice = ({ isOpen, onClose, onDeviceAdded }) => {
                 </button>
                 <button
                   type="button"
-                  className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded ml-2"
+                  className="bg-red-primary hover:bg-red-500 text-white px-4 py-2 rounded-md ml-2" // Rounded button
                   onClick={handleNextPage}
                 >
                   Next
@@ -191,7 +208,7 @@ const AddNewDevice = ({ isOpen, onClose, onDeviceAdded }) => {
               </button>
               <button
                 type="submit"
-                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded ml-2"
+                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md ml-2" // Rounded button
                 onClick={handleSubmit}
               >
                 Confirm & Download
@@ -202,6 +219,7 @@ const AddNewDevice = ({ isOpen, onClose, onDeviceAdded }) => {
       </div>
     </div>
   );
+
 };
 
 export default AddNewDevice;
