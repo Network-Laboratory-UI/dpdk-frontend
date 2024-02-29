@@ -38,6 +38,8 @@ const BlockedListTable = ({ id }) => {
 
   useEffect(() => {
     fetchData();
+    const intervalId = setInterval(fetchData, 5000); // Fetch data every 5 seconds
+    return () => clearInterval(intervalId); // Cleanup interval on unmount
   }, [id]);
 
   const fetchData = async () => {
@@ -110,7 +112,7 @@ const BlockedListTable = ({ id }) => {
 
   const leftToolbarTemplate = () => {
     return (
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 font-['Helvetica']">
         <Button
           label="New"
           icon="pi pi-plus"
@@ -133,7 +135,7 @@ const BlockedListTable = ({ id }) => {
       <Button
         label="Export"
         icon="pi pi-upload"
-        className="p-button-help"
+        className="p-button-help font-['Helvetica']"
         // onClick={exportCSV}
       />
     );
@@ -144,15 +146,16 @@ const BlockedListTable = ({ id }) => {
   };
 
   const header = (
-    <div className="flex flex-wrap gap-2 align-items-center justify-content-between">
+    <div className="flex flex-wrap gap-2 align-items-center justify-content-between ">
       <h4 className="m-0">Blocked List</h4>
       <span className="p-input-icon-end">
+        <i className="pi pi-search" />
         <InputText
+          className="p-2 mr-1 ml-2 rounded-xl font-['Helvetica'] font-normal"
           type="search"
           onInput={(e) => setGlobalFilter(e.target.value)}
           placeholder="Search..."
         />
-        <i className="pi pi-search" />
       </span>
     </div>
   );
@@ -162,13 +165,13 @@ const BlockedListTable = ({ id }) => {
       <Button
         label="Cancel"
         icon="pi pi-times"
-        className="p-button-text"
+        className="p-button-text bg-gray-300 text-gray-700 hover:bg-gray-400 hover:text-gray-800 rounded-lg px-4 py-2 mr-2  font-['Helvetica']"
         onClick={hideDialog}
       />
       <Button
         label="Save"
         icon="pi pi-check"
-        className="p-button-text"
+        className="p-button-text bg-red-primary hover:bg-red-500 rounded-lg px-4 py-2 text-white font-['Helvetica']"
         onClick={saveBlockedItem}
       />
     </React.Fragment>
@@ -182,6 +185,7 @@ const BlockedListTable = ({ id }) => {
           rounded
           outlined
           severity="danger"
+          style={{ color: "red" }}
           onClick={() =>
             toast.current.show({
               severity: "info",
@@ -221,15 +225,16 @@ const BlockedListTable = ({ id }) => {
           onSelectionChange={(e) => setSelectedBlokcedItem(e.value)}
           dataKey="id"
           paginator
-          rows={10}
-          rowsPerPageOptions={[5, 10, 25]}
-          paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-          currentPageReportTemplate="Showing {first} to {last} of {totalRecords} blocked items"
+          rows={20}
+          rowsPerPageOptions={[10, 15, 20]}
+          paginatorTemplate="RowsPerPageDropdown CurrentPageReport PrevPageLink NextPageLink"
+          currentPageReportTemplate="{first}-{last} of {totalRecords}"
+          scrollable
+          scrollHeight="calc(100vh - 300px)"
           globalFilter={globalFilter}
           header={header}
         >
           <Column selectionMode="multiple" exportable={false}></Column>
-          <Column field="ps_id" header="PS ID" sortable></Column>
           <Column field="name" header="Name" sortable></Column>
           <Column field="domain" header="Domain" sortable></Column>
           <Column field="ip_add" header="IP Address" sortable></Column>
@@ -246,40 +251,44 @@ const BlockedListTable = ({ id }) => {
         style={{ width: "30rem" }}
         header="Add/Edit Blocked Item"
         modal
-        className="p-fluid"
+        className="p-fluid font-['Helvetica']"
         footer={blockedItemDialogFooter}
         onHide={hideDialog}
       >
         <div className="p-field">
-          <label htmlFor="ps_id">PS ID</label>
-          <InputText
-            id="ps_id"
-            value={blockedItem.ps_id}
-            onChange={(e) => onInputChange(e, "ps_id")}
-          />
-        </div>
-        <div className="p-field">
-          <label htmlFor="name">Name</label>
+          <label htmlFor="name" className="font-['Helvetica']">
+            Name
+          </label>
           <InputText
             id="name"
             value={blockedItem.name}
             onChange={(e) => onInputChange(e, "name")}
+            className="p-inputtext-custom w-full p-2 border border-gray-300 rounded-xl mt-1"
+            // Add Tailwind classes for styling
           />
         </div>
         <div className="p-field">
-          <label htmlFor="domain">Domain</label>
+          <label htmlFor="domain" className="font-['Helvetica']">
+            Domain
+          </label>
           <InputText
             id="domain"
             value={blockedItem.domain}
             onChange={(e) => onInputChange(e, "domain")}
+            className="p-inputtext-custom w-full p-2 border border-gray-300 rounded-xl mt-1"
+            // Add Tailwind classes for styling
           />
         </div>
         <div className="p-field">
-          <label htmlFor="ip_add">IP Address</label>
+          <label htmlFor="ip_add" className="font-['Helvetica']">
+            IP Address
+          </label>
           <InputText
             id="ip_add"
             value={blockedItem.ip_add}
             onChange={(e) => onInputChange(e, "ip_add")}
+            className="p-inputtext-custom w-full p-2 border border-gray-300 rounded-xl"
+            // Add Tailwind classes for styling
           />
         </div>
       </Dialog>
@@ -291,6 +300,7 @@ const BlockedListTable = ({ id }) => {
         modal
         footer={blockedItemDialogFooter}
         onHide={hideDeleteBlockedItemDialog}
+        className="font-['Helvetica']"
       >
         <div>
           <p>
