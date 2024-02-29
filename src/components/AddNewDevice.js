@@ -5,6 +5,7 @@ import generateConfigFileContent from "./GenerateConfigFileContent"; // Import t
 const AddNewDevice = ({ isOpen, onClose, onDeviceAdded }) => {
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
+  const [ipAdd, setIpAdd] = useState("");
   const [periodStats, setPeriodStats] = useState("");
   const [periodSend, setPeriodSend] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -35,6 +36,7 @@ const AddNewDevice = ({ isOpen, onClose, onDeviceAdded }) => {
       // Generate configuration file content
       const configFileContent = generateConfigFileContent(
         npbId,
+        ipAdd,
         periodStats,
         periodSend
       );
@@ -80,6 +82,7 @@ const AddNewDevice = ({ isOpen, onClose, onDeviceAdded }) => {
       // Combine static and dynamic values
       const configData = {
         Id: npbId,
+        backend_ip: ipAdd,
         ...staticConfigValues,
         timerPeriodStats: periodStats,
         timerPeriodSend: periodSend,
@@ -95,11 +98,12 @@ const AddNewDevice = ({ isOpen, onClose, onDeviceAdded }) => {
       onDeviceAdded();
 
       // Close the popup after successful submission
-      onClose();
+      onClose(); // <-- Close the popup here
     } catch (error) {
       console.error("Error adding new device: ", error);
     }
   };
+
 
   if (!isOpen) return null;
 
@@ -141,6 +145,22 @@ const AddNewDevice = ({ isOpen, onClose, onDeviceAdded }) => {
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   placeholder="e.g. Building A, Floor 1, Room 101"
+                />
+              </div>
+              <div className="mb-4">
+                <label
+                  htmlFor="ipAdd"
+                  className="block font-normal mb-1 font-['Helvetica']"
+                >
+                  Server IP Address:
+                </label>
+                <input
+                  type="text"
+                  id="ipAdd"
+                  className="border p-2 w-full rounded-md font-['Helvetica']" // Adjusted height
+                  value={ipAdd}
+                  onChange={(e) => setIpAdd(e.target.value)}
+                  placeholder="e.g 192.168.0.0"
                 />
               </div>
               <div className="mb-4">
@@ -219,7 +239,6 @@ const AddNewDevice = ({ isOpen, onClose, onDeviceAdded }) => {
       </div>
     </div>
   );
-
 };
 
 export default AddNewDevice;

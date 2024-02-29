@@ -56,13 +56,37 @@ const Home = () => {
       });
   };
 
+  const updateData = () => {
+    axios
+      .get(`${process.env.REACT_APP_BASE_URL}/npb/npbs`)
+      .then((response) => {
+        const data = response.data;
+        setNpbCards(data);
+      })
+      .catch((error) => {
+        console.error("Error fetching NPB data: ", error);
+      });
+
+    axios
+      .get(`${process.env.REACT_APP_BASE_URL}/ps/pss`)
+      .then((response) => {
+        const data = response.data;
+        setPolicyServerCards(data);
+      })
+      .catch((error) => {
+        console.error("Error fetching Policy Server data: ", error);
+      });
+  };
+
   const openPopup = () => {
     setIsAddNewDeviceOpen(true);
   };
 
   const closePopup = () => {
+    console.log("Closing popup"); // Add this line for debugging
     setIsAddNewDeviceOpen(false);
   };
+
 
   const handleNpbCardClick = (id) => {
     navigateTo(`npb?id=${id}`, { state: { npbCards, policyServerCards } });
@@ -73,7 +97,7 @@ const Home = () => {
   };
 
   const handleDeviceAdded = () => {
-    fetchData(); // Reload data after adding a new device
+    updateData();
   };
 
   return (

@@ -62,16 +62,16 @@ function Ps() {
 
   useEffect(() => {
     setRstClient(
-      packetData.reduce((total, packet) => total + packet.rst_client, 0)
+      packetData.reduce((total, packet) => total + packet.rstClient, 0)
     );
     setRstServer(
-      packetData.reduce((total, packet) => total + packet.rst_server, 0)
+      packetData.reduce((total, packet) => total + packet.rstServer, 0)
     );
     setTxCount(
-      packetData.reduce((total, packet) => total + packet.tx_count, 0)
+      packetData.reduce((total, packet) => total + packet.tx_1_count, 0)
     );
     setRxCount(
-      packetData.reduce((total, packet) => total + packet.rx_count, 0)
+      packetData.reduce((total, packet) => total + packet.rx_0_count, 0)
     );
   }, [packetData]);
 
@@ -182,7 +182,7 @@ function Ps() {
               title="Reset Client Hit"
               packetData={packetData.map((data) => ({
                 time: data.time,
-                value: data.rst_client,
+                value: data.rstClient,
               }))}
             />
           </div>
@@ -191,7 +191,7 @@ function Ps() {
               title="Reset Server Hit"
               packetData={packetData.map((data) => ({
                 time: data.time,
-                value: data.rst_server,
+                value: data.rstServer,
               }))}
             />
           </div>
@@ -200,7 +200,7 @@ function Ps() {
               title="TX Count"
               packetData={packetData.map((data) => ({
                 time: data.time,
-                value: data.tx_count,
+                value: data.tx_1_count,
               }))}
             />
           </div>
@@ -209,7 +209,7 @@ function Ps() {
               title="RX Count"
               packetData={packetData.map((data) => ({
                 time: data.time,
-                value: data.rx_count,
+                value: data.rx_0_count,
               }))}
             />
           </div>
