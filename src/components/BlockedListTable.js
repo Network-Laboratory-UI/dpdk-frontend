@@ -28,9 +28,8 @@ const BlockedListTable = ({ id }) => {
   const [blockedItems, setBlockedItems] = useState(null);
   const [blockedItemDialog, setBlockedItemDialog] = useState(false);
   const [blockedItem, setBlockedItem] = useState(emptyBlockedItem);
-  const [deleteBlokcedItemDialog, setDeleteBlokcedItemDialog] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [selectedBlokcedItem, setSelectedBlokcedItem] = useState(null);
+  const [selectedBlockedItem, setSelectedBlockedItem] = useState(null);
   const [globalFilter, setGlobalFilter] = useState(null);
   const toast = useRef(null);
   const dt = useRef(null);
@@ -62,7 +61,6 @@ const BlockedListTable = ({ id }) => {
       setBlockedItems([]);
     }
   };
-
 
   const openNew = () => {
     setBlockedItem(emptyBlockedItem);
@@ -96,6 +94,10 @@ const BlockedListTable = ({ id }) => {
             detail: "Blocked Item Created",
             life: 3000,
           });
+          // Reset state and close dialog
+          setBlockedItemDialog(false);
+          setBlockedItem(emptyBlockedItem);
+          setSubmitted(false);
         } else {
           throw new Error("Failed to save blocked item");
         }
@@ -107,12 +109,22 @@ const BlockedListTable = ({ id }) => {
           detail: "Failed to save blocked item",
           life: 3000,
         });
-      } finally {
-        setBlockedItemDialog(false);
-        setBlockedItem(emptyBlockedItem);
+        // Reset submitted state
+        setSubmitted(false);
       }
+    } else {
+      // Show toast message for validation error
+      toast.current.show({
+        severity: "error",
+        summary: "Error",
+        detail: "Please fill all fields",
+        life: 3000,
+      });
+      // Reset submitted state
+      setSubmitted(false);
     }
   };
+
 
   const onInputChange = (e, name) => {
     const val = e.target.value || "";
@@ -132,8 +144,8 @@ const BlockedListTable = ({ id }) => {
           label="Delete"
           icon="pi pi-trash"
           severity="danger"
-          onClick={confirmDeleteSelected}
-          disabled={!selectedBlokcedItem || !selectedBlokcedItem.length}
+          onClick={confirmDeleteBlockedItem}
+          disabled={!selectedBlockedItem || !selectedBlockedItem.length}
         />
       </div>
     );
@@ -148,10 +160,6 @@ const BlockedListTable = ({ id }) => {
         // onClick={exportCSV}
       />
     );
-  };
-
-  const confirmDeleteSelected = () => {
-    setDeleteBlokcedItemDialog(true);
   };
 
   const header = (
@@ -195,21 +203,77 @@ const BlockedListTable = ({ id }) => {
           outlined
           severity="danger"
           style={{ color: "red" }}
-          onClick={() =>
-            toast.current.show({
-              severity: "info",
-              summary: "Info Message",
-              detail: "Deleted",
-            })
-          }
+          onClick={() => deleteBlockedItem(rowData)}
         />
       </React.Fragment>
     );
   };
 
-  const confirmDeleteBlockedItem = (blockedItem) => {
-    setBlockedItem(blockedItem);
-    setDeleteBlockedItemDialog(true);
+  const deleteBlockedItem = async (blockedItem) => {
+    console.log("Deleting blocked item:", blockedItem);
+    try {
+      const response = await axios.delete(
+        `${process.env.REACT_APP_BASE_URL}/ps/blocked-list/${blockedItem.id}`
+      );
+      if (response.status !== 200) {
+        throw new Error(
+          `Failed to delete blocked item with ID ${blockedItem.id}`
+        );
+      }
+
+      fetchData();
+      toast.current.show({
+        severity: "success",
+        summary: "Successful",
+        detail: "Blocked Item Deleted",
+        life: 3000,
+      });
+    } catch (error) {
+      console.error("Error deleting blocked item:", error);
+      toast.current.show({
+        severity: "error",
+        summary: "Error",
+        detail: "Failed to delete blocked item",
+        life: 3000,
+      });
+    }
+  };
+
+  const confirmDeleteBlockedItem = async () => {
+    try {
+      // Use Promise.all to send all delete requests concurrently
+      await Promise.all(
+        selectedBlockedItem.map(async (blockedItem) => {
+          const response = await axios.delete(
+            `${process.env.REACT_APP_BASE_URL}/ps/blocked-list/${blockedItem.id}`
+          );
+          if (response.status !== 200) {
+            throw new Error(
+              `Failed to delete blocked item with ID ${blockedItem.id}`
+            );
+          }
+        })
+      );
+
+      fetchData();
+      toast.current.show({
+        severity: "success",
+        summary: "Successful",
+        detail: "Blocked Item(s) Deleted",
+        life: 3000,
+      });
+    } catch (error) {
+      console.error("Error deleting blocked item(s):", error);
+      toast.current.show({
+        severity: "error",
+        summary: "Error",
+        detail: "Failed to delete blocked item(s)",
+        life: 3000,
+      });
+    } finally {
+      setDeleteBlockedItemDialog(false);
+      setSelectedBlockedItem(null);
+    }
   };
 
   const hideDeleteBlockedItemDialog = () => {
@@ -230,8 +294,8 @@ const BlockedListTable = ({ id }) => {
         <DataTable
           ref={dt}
           value={blockedItems}
-          selection={selectedBlokcedItem}
-          onSelectionChange={(e) => setSelectedBlokcedItem(e.value)}
+          selection={selectedBlockedItem}
+          onSelectionChange={(e) => setSelectedBlockedItem(e.value)}
           dataKey="id"
           paginator
           rows={20}
