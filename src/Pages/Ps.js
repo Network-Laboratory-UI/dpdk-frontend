@@ -10,7 +10,7 @@ import BlockedListTable from "../components/BlockedListTable";
 function Ps() {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
-  const id = parseInt(searchParams.get("id"), 10);
+  const id = decodeURIComponent(searchParams.get("id"));
   const [loading, setLoading] = useState(true); // Loading state
   const [policyServer, setPolicyServer] = useState({
     id: "",
@@ -77,11 +77,13 @@ function Ps() {
 
   const handleDownloadConfig = () => {
     axios
-      .get(`${process.env.REACT_APP_BASE_URL}/npb/config/${id}`)
+      .get(`${process.env.REACT_APP_BASE_URL}/config/${id}`)
       .then((response) => {
-        const { Id, timerPeriodStats, timerPeriodSend } = response.data;
+        const { npbId, psId, backend_ip, timerPeriodStats, timerPeriodSend } = response.data;
         const configFileContent = generateConfigFileContent(
-          Id,
+          npbId,
+          psId,
+          backend_ip,
           timerPeriodStats,
           timerPeriodSend
         );
@@ -137,7 +139,7 @@ function Ps() {
               Status
             </p>
             <div className="w-4 h-4 text-gray-700 text-2xl font-bold font-['Helvetica'] mt-3 ">
-              Policy Server- {policyServer.id}
+              Policy Server
             </div>
             <div className="w-4 h-4 text-gray-700 text-xl font-normal font-['Helvetica'] mt-4">
               {policyServer.name}

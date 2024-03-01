@@ -89,12 +89,17 @@ const Home = () => {
 
 
   const handleNpbCardClick = (id) => {
-    navigateTo(`npb?id=${id}`, { state: { npbCards, policyServerCards } });
+    navigateTo(`npb?id=${encodeURIComponent(id)}`, {
+      state: { npbCards, policyServerCards },
+    });
   };
 
   const handlePolicyServerCardClick = (id) => {
-    navigateTo(`ps?id=${id}`, { state: { npbCards, policyServerCards } });
+    navigateTo(`ps?id=${encodeURIComponent(id)}`, {
+      state: { npbCards, policyServerCards },
+    });
   };
+
 
   const handleDeviceAdded = () => {
     updateData();

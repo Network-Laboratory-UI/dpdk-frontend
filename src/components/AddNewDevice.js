@@ -27,15 +27,24 @@ const AddNewDevice = ({ isOpen, onClose, onDeviceAdded }) => {
         return;
       }
 
+      // Create NPB
       const npbResponse = await axios.post(
         `${process.env.REACT_APP_BASE_URL}/npb/createnpb`,
         { name, location }
       );
       const npbId = npbResponse.data.id; // Extract NPB ID from the response
 
+      // Create PS
+      const psResponse = await axios.post(
+        `${process.env.REACT_APP_BASE_URL}/ps/createps`,
+        { name, location }
+      );
+      const psId = psResponse.data.id; // Extract PS ID from the response
+
       // Generate configuration file content
       const configFileContent = generateConfigFileContent(
         npbId,
+        psId, // Ensure psId is declared before using it
         ipAdd,
         periodStats,
         periodSend
@@ -60,12 +69,6 @@ const AddNewDevice = ({ isOpen, onClose, onDeviceAdded }) => {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      // Send data to the respective API based on the type of device
-      await axios.post(`${process.env.REACT_APP_BASE_URL}/ps/createps`, {
-        name,
-        location,
-      });
-
       // Static configuration values
       const staticConfigValues = {
         maxPacketLen: 1500,
@@ -81,7 +84,8 @@ const AddNewDevice = ({ isOpen, onClose, onDeviceAdded }) => {
 
       // Combine static and dynamic values
       const configData = {
-        Id: npbId,
+        npbId: npbId,
+        psId: psId,
         backend_ip: ipAdd,
         ...staticConfigValues,
         timerPeriodStats: periodStats,
@@ -90,7 +94,7 @@ const AddNewDevice = ({ isOpen, onClose, onDeviceAdded }) => {
 
       // Post the combined config data
       await axios.post(
-        `${process.env.REACT_APP_BASE_URL}/npb/config`,
+        `${process.env.REACT_APP_BASE_URL}/config/create`,
         configData
       );
 
@@ -103,6 +107,7 @@ const AddNewDevice = ({ isOpen, onClose, onDeviceAdded }) => {
       console.error("Error adding new device: ", error);
     }
   };
+
 
 
   if (!isOpen) return null;
