@@ -45,15 +45,24 @@ const BlockedListTable = ({ id }) => {
   const fetchData = async () => {
     try {
       const response = await axios.get(
-        `${process.env.REACT_APP_BASE_URL}/ps/blocked-list/${id}`
+        `${process.env.REACT_APP_BASE_URL}/ps/blocked-list`
       );
-      const data = response.data;
-      setBlockedItems(data);
+
+      if (
+        response.data.message &&
+        response.data.message === "No PS blocked list found"
+      ) {
+        setBlockedItems([]); // Set an empty array if no data is found
+      } else {
+        const data = response.data;
+        setBlockedItems(data);
+      }
     } catch (error) {
       console.error("Error fetching data:", error);
       setBlockedItems([]);
     }
   };
+
 
   const openNew = () => {
     setBlockedItem(emptyBlockedItem);
@@ -76,7 +85,7 @@ const BlockedListTable = ({ id }) => {
     ) {
       try {
         const response = await axios.post(
-          `${process.env.REACT_APP_BASE_URL}/ps/blocked-list/${id}`,
+          `${process.env.REACT_APP_BASE_URL}/ps/blocked-list`,
           blockedItem
         );
         if (response.status === 200) {
