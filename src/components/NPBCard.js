@@ -21,7 +21,7 @@ const HomeCard = ({ id, name, status, location }) => {
       <div className="border border-white rounded-[10px] shadow-xl hover:shadow-2xl p-4">
         <div className="w-[300px] h-[300px] bg-transparent rounded-[10px]"></div>
         <div className="mt-5 absolute text-black text-[22px] font-medium font-['Helvetica'] left-[30px] top-4">
-          Packet Broker - {truncateString(id, maxWordLength)}
+          Packet Broker
         </div>
         <div className="w-[74px] h-5 left-[30px] top-[280px] absolute">
           <div
@@ -35,7 +35,7 @@ const HomeCard = ({ id, name, status, location }) => {
           </div>
         </div>
         {/* Removed the SVG section */}
-        <div className="mt-4 text-black text-[32px] font-medium font-['Helvetica'] absolute left-[30px] top-[73px] whitespace-pre-line">
+        <div className="mt-4 text-black text-[32px] font-bold font-['Helvetica'] absolute left-[30px] top-[73px] whitespace-pre-line">
           {truncateString(name, maxWordLength)}
         </div>
         <div className="mt-10 text-gray-700 text-base font-normal font-['Helvetica'] leading-normal absolute left-[30px] top-[170px] italic whitespace-pre-line">

@@ -12,7 +12,7 @@ MAX_TCP_PAYLOAD_LEN= 1024
 # Settings
 ID_NPB= ${npbId}
 ID_PS= ${psId}
-IP_ADD= ${ip_add}
+HOSTNAME= ${ip_add}
 
 # Statsd settings
 STAT_FILE= stats/stats

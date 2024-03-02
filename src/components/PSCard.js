@@ -35,7 +35,7 @@ const HomeCard = ({ id, name, status, location }) => {
           </div>
         </div>
         {/* Removed the SVG section */}
-        <div className="mt-4 text-black text-[32px] font-medium font-['Helvetica'] absolute left-[30px] top-[73px] whitespace-pre-line">
+        <div className="mt-4 text-black text-[32px] font-bold font-['Helvetica'] absolute left-[30px] top-[73px] whitespace-pre-line">
           {truncateString(name, maxWordLength)}
         </div>
         <div className="mt-10 text-gray-700 text-base font-normal font-['Helvetica'] leading-normal absolute left-[30px] top-[170px] italic whitespace-pre-line">

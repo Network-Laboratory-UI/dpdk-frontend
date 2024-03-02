@@ -17,37 +17,43 @@ function Npb() {
     location: "",
   });
   const [packetData, setPacketData] = useState([]);
-  const [httpCount, setHttpCount] = useState(0);
-  const [httpsCount, setHttpsCount] = useState(0);
-  const [txCount, setTxCount] = useState(0);
-  const [rxCount, setRxCount] = useState(0);
+  const [totalPacket, setTotalPacket] = useState({
+    httpCount: 0,
+    httpsCount: 0,
+    txCount: 0,
+    rxCount: 0,
+  });
 
   useEffect(() => {
-    setLoading(true); // Set loading to true when fetching data starts
-    axios
-      .get(`${process.env.REACT_APP_BASE_URL}/npb/npbid/${id}`)
-      .then((response) => {
-        const data = response.data;
-        setPacketBroker({
-          id: data.id,
-          name: data.name,
-          location: data.location,
-        });
-      })
-      .catch((error) => {
-        console.error("Error fetching packet broker data: ", error);
-      });
+    let initialFetchCompleted = false;
 
-    axios
-      .get(`${process.env.REACT_APP_BASE_URL}/npb/npb-packet/${id}`)
-      .then((response) => {
-        const data = response.data;
-        if (Array.isArray(data) && data.length > 0) {
+    const fetchData = async () => {
+      try {
+        if (!initialFetchCompleted) {
+          setLoading(true); // Show loading state only for initial fetch
+        }
+
+        // Fetch total packet data for the card
+        const totalResponse = await axios.get(
+          `${process.env.REACT_APP_BASE_URL}/npb/npb-packet-total/${id}`
+        );
+        const totalData = totalResponse.data;
+        setTotalPacket({
+          httpCount: formatNumber(totalData.npbPackets.http_count),
+          httpsCount: formatNumber(totalData.npbPackets.https_count),
+          txCount: formatNumber(totalData.npbPackets.tx_0_count),
+          rxCount: formatNumber(totalData.npbPackets.rx_1_count),
+        });
+
+        // Fetch graph data
+        const graphResponse = await axios.get(
+          `${process.env.REACT_APP_BASE_URL}/npb/npb-packet/${id}`
+        );
+        const graphData = graphResponse.data;
+        if (Array.isArray(graphData) && graphData.length > 0) {
           // Convert UTC datetime to local time for each packet
-          const localData = data.map((packet) => {
-            // Parse the UTC date string manually
+          const localData = graphData.map((packet) => {
             const utcDate = new Date(packet.time);
-            // Convert UTC date to local date string
             const localDateString = utcDate.toLocaleString();
             return {
               ...packet,
@@ -58,40 +64,51 @@ function Npb() {
         } else {
           setPacketData([{ message: "No Npb Packets found" }]);
         }
-        setLoading(false); // Set loading to false when data fetching is complete
-      })
-      .catch((error) => {
-        console.error("Error fetching packet data: ", error);
-        setPacketData([{ message: "Error fetching packet data" }]);
-        setLoading(false); // Set loading to false if there's an error
-      });
-  }, [id]);
 
-  useEffect(() => {
-    setHttpCount(
-      packetData.reduce((total, packet) => total + packet.http_count, 0)
-    );
-    setHttpsCount(
-      packetData.reduce((total, packet) => total + packet.https_count, 0)
-    );
-    setTxCount(
-      packetData.reduce((total, packet) => total + packet.tx_0_count, 0)
-    );
-    setRxCount(
-      packetData.reduce((total, packet) => total + packet.rx_1_count, 0)
-    );
-  }, [packetData]);
+        // Fetch Policy Server info
+        const packetBrokerResponse = await axios.get(
+          `${process.env.REACT_APP_BASE_URL}/npb/npbid/${id}`
+        );
+        const packetBrokerData = packetBrokerResponse.data;
+
+        console.log("Packet Broker Data: ", packetBrokerData);
+
+        setPacketBroker({
+          id: packetBrokerData.id,
+          name: packetBrokerData.name,
+          location: packetBrokerData.location,
+        });
+
+        if (!initialFetchCompleted) {
+          setLoading(false); // Hide loading state after initial fetch is complete
+          initialFetchCompleted = true; // Set initial fetch completed flag
+        }
+      } catch (error) {
+        console.error("Error fetching data: ", error);
+        setLoading(false); // Hide loading state if there's an error
+      }
+    };
+
+    // Initial fetch
+    fetchData();
+
+    // Set interval to fetch data every 30 seconds
+    const intervalId = setInterval(fetchData, 30000);
+
+    // Cleanup function to clear interval
+    return () => clearInterval(intervalId);
+  }, [id]);
 
   const handleDownloadConfig = () => {
     axios
       .get(`${process.env.REACT_APP_BASE_URL}/config/${id}`)
       .then((response) => {
-        const { npbId, psId, backend_ip, timerPeriodStats, timerPeriodSend } =
+        const { npbId, psId, hostname, timerPeriodStats, timerPeriodSend } =
           response.data;
         const configFileContent = generateConfigFileContent(
           npbId,
           psId,
-          backend_ip,
+          hostname,
           timerPeriodStats,
           timerPeriodSend
         );
@@ -108,6 +125,29 @@ function Npb() {
       .catch((error) => {
         console.error("Error downloading config: ", error);
       });
+  };
+
+  // Function to format numbers
+  const formatNumber = (num) => {
+    if (num >= 1e18) {
+      return (num / 1e18).toFixed(2).replace(/\.0$/, "") + " Qi";
+    }
+    if (num >= 1e15) {
+      return (num / 1e15).toFixed(2).replace(/\.0$/, "") + " Qa";
+    }
+    if (num >= 1e12) {
+      return (num / 1e12).toFixed(2).replace(/\.0$/, "") + " T";
+    }
+    if (num >= 1e9) {
+      return (num / 1e9).toFixed(2).replace(/\.0$/, "") + " B";
+    }
+    if (num >= 1e6) {
+      return (num / 1e6).toFixed(2).replace(/\.0$/, "") + " M";
+    }
+    if (num >= 1e3) {
+      return (num / 1e3).toFixed(2).replace(/\.0$/, "") + " K";
+    }
+    return num;
   };
 
   return (
@@ -160,33 +200,33 @@ function Npb() {
             <div className="mr-2">
               <Card
                 hitType="HTTP Count"
-                number={httpCount.toString()}
+                number={totalPacket.httpCount}
                 packet="Packet"
               />
             </div>
             <div className="mr-2">
               <Card
                 hitType="HTTPS Count"
-                number={httpsCount.toString()}
+                number={totalPacket.httpsCount}
                 packet="Packet"
               />
             </div>
             <div className="mr-2">
               <Card
                 hitType="TX Count"
-                number={txCount.toString()}
+                number={totalPacket.txCount}
                 packet="Packet"
               />
             </div>
             <div className="mr-2">
               <Card
                 hitType="RX Count"
-                number={rxCount.toString()}
+                number={totalPacket.rxCount}
                 packet="Packet"
               />
             </div>
           </div>
-          <div className="mt-10  mr-10 shadow-sm">
+          <div className="mt-10 mr-10 shadow-sm">
             <LineChart
               title="HTTP Count"
               packetData={packetData.map((data) => ({
@@ -195,7 +235,7 @@ function Npb() {
               }))}
             />
           </div>
-          <div className="mt-10  mr-10 shadow-sm">
+          <div className="mt-10 mr-10 shadow-sm">
             <LineChart
               title="HTTPS Count"
               packetData={packetData.map((data) => ({
@@ -204,7 +244,7 @@ function Npb() {
               }))}
             />
           </div>
-          <div className="mt-10  mr-10 shadow-sm">
+          <div className="mt-10 mr-10 shadow-sm">
             <LineChart
               title="TX Count"
               packetData={packetData.map((data) => ({
