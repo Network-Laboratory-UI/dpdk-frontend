@@ -37,7 +37,7 @@ const LineChart = ({ title, packetData }) => {
 
   useEffect(() => {
     if (packetData && packetData.length > 0) {
-      const latestData = packetData.slice(-30); // Display only the latest 50 data points
+      const latestData = packetData.slice(-60); // Display only the latest 50 data points
       const timeLabels = latestData.map((data) =>
         new Date(data.time).toLocaleTimeString()
       );

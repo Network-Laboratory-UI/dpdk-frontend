@@ -21,7 +21,7 @@ const HomeCard = ({ id, name, status, location }) => {
       <div className="border border-white rounded-[10px] shadow-xl hover:shadow-2xl p-4">
         <div className="w-[300px] h-[300px] bg-transparent rounded-[10px]"></div>
         <div className="mt-5 absolute text-black text-[22px] font-medium font-['Helvetica'] left-[30px] top-4">
-          Policy Server - {truncateString(id, maxWordLength)}
+          Policy Server
         </div>
         <div className="w-[74px] h-5 left-[30px] top-[280px] absolute">
           <div
