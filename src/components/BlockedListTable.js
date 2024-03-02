@@ -34,6 +34,10 @@ const BlockedListTable = ({ id }) => {
   const toast = useRef(null);
   const dt = useRef(null);
   const [deleteBlockedItemDialog, setDeleteBlockedItemDialog] = useState(false);
+  const [updateBlockedItemDialog, setUpdateBlockedItemDialog] = useState(false);
+  const [deleteBatchItemDialog, setDeleteBatchItemDialog] = useState(false);
+  const [updateBlockedItem, setUpdateBlockedItem] = useState(emptyBlockedItem);
+  const [deleteBlockedItem, setDeleteBlockedItem] = useState(emptyBlockedItem);
 
   useEffect(() => {
     fetchData();
@@ -62,6 +66,10 @@ const BlockedListTable = ({ id }) => {
     }
   };
 
+  useEffect(() => {
+    console.log("selectedBlockedItem:", selectedBlockedItem);
+  }, [selectedBlockedItem]);
+
   const openNew = () => {
     setBlockedItem(emptyBlockedItem);
     setSubmitted(false);
@@ -71,6 +79,9 @@ const BlockedListTable = ({ id }) => {
   const hideDialog = () => {
     setSubmitted(false);
     setBlockedItemDialog(false);
+    setUpdateBlockedItemDialog(false);
+    setDeleteBlockedItemDialog(false);
+    setDeleteBatchItemDialog(false);
   };
 
   const saveBlockedItem = async () => {
@@ -125,6 +136,123 @@ const BlockedListTable = ({ id }) => {
     }
   };
 
+  const openUpdateDialog = (item) => {
+    setUpdateBlockedItem(item);
+    setUpdateBlockedItemDialog(true);
+  };
+
+  const openDeleteDialog = (rowData) => {
+    setDeleteBlockedItem(rowData);
+    setDeleteBlockedItemDialog(true);
+  };
+
+  const openBatchDeleteDialog = () => {
+    setDeleteBatchItemDialog(true);
+  };
+
+  const handleUpdateBlockedItem = async () => {
+    try {
+      const response = await axios.put(
+        `${process.env.REACT_APP_BASE_URL}/ps/blocked-list/${updateBlockedItem.id}`,
+        updateBlockedItem
+      );
+      if (response.status === 200) {
+        fetchData();
+        toast.current.show({
+          severity: "success",
+          summary: "Successful",
+          detail: "Blocked Item Updated",
+          life: 3000,
+        });
+        setUpdateBlockedItemDialog(false);
+        setUpdateBlockedItem(emptyBlockedItem);
+      } else {
+        throw new Error("Failed to update blocked item");
+      }
+    } catch (error) {
+      console.error("Error updating blocked item:", error);
+      toast.current.show({
+        severity: "error",
+        summary: "Error",
+        detail: "Failed to update blocked item",
+        life: 3000,
+      });
+    }
+  };
+
+  const deleteBlockedItemConfirm = async () => {
+    try {
+      const response = await axios.delete(
+        `${process.env.REACT_APP_BASE_URL}/ps/blocked-list/${deleteBlockedItem.id}`
+      );
+      if (response.status !== 200) {
+        throw new Error(
+          `Failed to delete blocked item with ID ${deleteBlockedItem.id}`
+        );
+      }
+
+      fetchData();
+      toast.current.show({
+        severity: "success",
+        summary: "Successful",
+        detail: "Blocked Item Deleted",
+        life: 3000,
+      });
+      setDeleteBlockedItemDialog(false);
+      setDeleteBlockedItem(emptyBlockedItem);
+    } catch (error) {
+      console.error("Error deleting blocked item:", error);
+      toast.current.show({
+        severity: "error",
+        summary: "Error",
+        detail: "Failed to delete blocked item",
+        life: 3000,
+      });
+    }
+  };
+
+  const confirmDeleteBatchBlockedItem = async () => {
+    try {
+      // Use Promise.all to send all delete requests concurrently
+      await Promise.all(
+        selectedBlockedItem.map(async (blockedItem) => {
+          const response = await axios.delete(
+            `${process.env.REACT_APP_BASE_URL}/ps/blocked-list/${blockedItem.id}`
+          );
+          if (response.status !== 200) {
+            throw new Error(
+              `Failed to delete blocked item with ID ${blockedItem.id}`
+            );
+          }
+        })
+      );
+
+      fetchData();
+      toast.current.show({
+        severity: "success",
+        summary: "Successful",
+        detail: "Blocked Item(s) Deleted",
+        life: 3000,
+      });
+      setDeleteBatchItemDialog(false);
+    } catch (error) {
+      console.error("Error deleting blocked item(s):", error);
+      toast.current.show({
+        severity: "error",
+        summary: "Error",
+        detail: "Failed to delete blocked item(s)",
+        life: 3000,
+      });
+    } finally {
+      setDeleteBatchItemDialog(false);
+      setSelectedBlockedItem(null);
+    }
+  };
+
+  const onInputChangeUpdate = (e, name) => {
+    const val = e.target.value || "";
+    setUpdateBlockedItem((prevState) => ({ ...prevState, [name]: val }));
+  };
 
   const onInputChange = (e, name) => {
     const val = e.target.value || "";
@@ -144,7 +272,7 @@ const BlockedListTable = ({ id }) => {
           label="Delete"
           icon="pi pi-trash"
           severity="danger"
-          onClick={confirmDeleteBlockedItem}
+          onClick={openBatchDeleteDialog}
           disabled={!selectedBlockedItem || !selectedBlockedItem.length}
         />
       </div>
@@ -194,86 +322,77 @@ const BlockedListTable = ({ id }) => {
     </React.Fragment>
   );
 
+  const deleteBlockedItemFooterDialog = (
+    <React.Fragment>
+      <Button
+        label="Cancel"
+        icon="pi pi-times"
+        className="p-button-text bg-gray-300 text-gray-700 hover:bg-gray-400 hover:text-gray-800 rounded-lg px-4 py-2 mr-2  font-['Helvetica']"
+        onClick={hideDialog}
+      />
+      <Button
+        label="Yes"
+        icon="pi pi-check"
+        className="p-button-text bg-red-primary hover:bg-red-500 rounded-lg px-4 py-2 text-white font-['Helvetica']"
+        onClick={deleteBlockedItemConfirm}
+      />
+    </React.Fragment>
+  );
+
+  const deleteBatchBlockedItemFooterDialog = (
+    <React.Fragment>
+      <Button
+        label="Cancel"
+        icon="pi pi-times"
+        className="p-button-text bg-gray-300 text-gray-700 hover:bg-gray-400 hover:text-gray-800 rounded-lg px-4 py-2 mr-2  font-['Helvetica']"
+        onClick={hideDialog}
+      />
+      <Button
+        label="Yes"
+        icon="pi pi-check"
+        className="p-button-text bg-red-primary hover:bg-red-500 rounded-lg px-4 py-2 text-white font-['Helvetica']"
+        onClick={confirmDeleteBatchBlockedItem}
+      />
+    </React.Fragment>
+  );
+
+  const blockedItemDialogFooterUpdate = (
+    <React.Fragment>
+      <Button
+        label="Cancel"
+        icon="pi pi-times"
+        className="p-button-text bg-gray-300 text-gray-700 hover:bg-gray-400 hover:text-gray-800 rounded-lg px-4 py-2 mr-2  font-['Helvetica']"
+        onClick={hideDialog}
+      />
+      <Button
+        label="Save"
+        icon="pi pi-check"
+        className="p-button-text bg-red-primary hover:bg-red-500 rounded-lg px-4 py-2 text-white font-['Helvetica']"
+        onClick={handleUpdateBlockedItem}
+      />
+    </React.Fragment>
+  );
+
   const actionBodyTemplate = (rowData) => {
     return (
       <React.Fragment>
+        <Button
+          icon="pi pi-pencil"
+          rounded
+          outlined
+          style={{ color: "blue" }}
+          onClick={() => openUpdateDialog(rowData)}
+        />
         <Button
           icon="pi pi-trash"
           rounded
           outlined
           severity="danger"
           style={{ color: "red" }}
-          onClick={() => deleteBlockedItem(rowData)}
+          onClick={() => openDeleteDialog(rowData)}
         />
       </React.Fragment>
     );
-  };
-
-  const deleteBlockedItem = async (blockedItem) => {
-    console.log("Deleting blocked item:", blockedItem);
-    try {
-      const response = await axios.delete(
-        `${process.env.REACT_APP_BASE_URL}/ps/blocked-list/${blockedItem.id}`
-      );
-      if (response.status !== 200) {
-        throw new Error(
-          `Failed to delete blocked item with ID ${blockedItem.id}`
-        );
-      }
-
-      fetchData();
-      toast.current.show({
-        severity: "success",
-        summary: "Successful",
-        detail: "Blocked Item Deleted",
-        life: 3000,
-      });
-    } catch (error) {
-      console.error("Error deleting blocked item:", error);
-      toast.current.show({
-        severity: "error",
-        summary: "Error",
-        detail: "Failed to delete blocked item",
-        life: 3000,
-      });
-    }
-  };
-
-  const confirmDeleteBlockedItem = async () => {
-    try {
-      // Use Promise.all to send all delete requests concurrently
-      await Promise.all(
-        selectedBlockedItem.map(async (blockedItem) => {
-          const response = await axios.delete(
-            `${process.env.REACT_APP_BASE_URL}/ps/blocked-list/${blockedItem.id}`
-          );
-          if (response.status !== 200) {
-            throw new Error(
-              `Failed to delete blocked item with ID ${blockedItem.id}`
-            );
-          }
-        })
-      );
-
-      fetchData();
-      toast.current.show({
-        severity: "success",
-        summary: "Successful",
-        detail: "Blocked Item(s) Deleted",
-        life: 3000,
-      });
-    } catch (error) {
-      console.error("Error deleting blocked item(s):", error);
-      toast.current.show({
-        severity: "error",
-        summary: "Error",
-        detail: "Failed to delete blocked item(s)",
-        life: 3000,
-      });
-    } finally {
-      setDeleteBlockedItemDialog(false);
-      setSelectedBlockedItem(null);
-    }
   };
 
   const hideDeleteBlockedItemDialog = () => {
@@ -371,7 +490,7 @@ const BlockedListTable = ({ id }) => {
         style={{ width: "30rem" }}
         header="Confirm"
         modal
-        footer={blockedItemDialogFooter}
+        footer={deleteBlockedItemFooterDialog}
         onHide={hideDeleteBlockedItemDialog}
         className="font-['Helvetica']"
       >
@@ -380,6 +499,67 @@ const BlockedListTable = ({ id }) => {
             Are you sure you want to delete the blocked item{" "}
             <strong>{blockedItem.name}</strong>?
           </p>
+        </div>
+      </Dialog>
+
+      <Dialog
+        visible={deleteBatchItemDialog}
+        style={{ width: "30rem" }}
+        header="Confirm"
+        modal
+        footer={deleteBatchBlockedItemFooterDialog}
+        onHide={hideDialog}
+        className="font-['Helvetica']"
+      >
+        <div>
+          <p>
+            Are you sure you want to delete the blocked item{" "}
+            <strong>{blockedItem.name}</strong>?
+          </p>
+        </div>
+      </Dialog>
+
+      <Dialog
+        visible={updateBlockedItemDialog}
+        style={{ width: "30rem" }}
+        header="Update Blocked Item"
+        modal
+        className="p-fluid font-['Helvetica']"
+        footer={blockedItemDialogFooterUpdate}
+        onHide={hideDialog}
+      >
+        <div className="p-field">
+          <label htmlFor="name" className="font-['Helvetica']">
+            Name
+          </label>
+          <InputText
+            id="name"
+            value={updateBlockedItem.name}
+            onChange={(e) => onInputChangeUpdate(e, "name")}
+            className="p-inputtext-custom w-full p-2 border border-gray-300 rounded-xl mt-1"
+          />
+        </div>
+        <div className="p-field">
+          <label htmlFor="domain" className="font-['Helvetica']">
+            Domain
+          </label>
+          <InputText
+            id="domain"
+            value={updateBlockedItem.domain}
+            onChange={(e) => onInputChangeUpdate(e, "domain")}
+            className="p-inputtext-custom w-full p-2 border border-gray-300 rounded-xl mt-1"
+          />
+        </div>
+        <div className="p-field">
+          <label htmlFor="ip_add" className="font-['Helvetica']">
+            IP Address
+          </label>
+          <InputText
+            id="ip_add"
+            value={updateBlockedItem.ip_add}
+            onChange={(e) => onInputChangeUpdate(e, "ip_add")}
+            className="p-inputtext-custom w-full p-2 border border-gray-300 rounded-xl"
+          />
         </div>
       </Dialog>
     </div>
