@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import axios from "axios";
 import generateConfigFileContent from "./GenerateConfigFileContent"; // Import the function
+import { Toast } from "primereact/toast";
 
 const AddNewDevice = ({ isOpen, onClose, onDeviceAdded }) => {
   const [name, setName] = useState("");
@@ -9,6 +10,7 @@ const AddNewDevice = ({ isOpen, onClose, onDeviceAdded }) => {
   const [periodStats, setPeriodStats] = useState("");
   const [periodSend, setPeriodSend] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const toast = useRef(null);
 
   const handleNextPage = () => {
     setCurrentPage(2);
@@ -103,17 +105,26 @@ const AddNewDevice = ({ isOpen, onClose, onDeviceAdded }) => {
 
       // Close the popup after successful submission
       onClose(); // <-- Close the popup here
+      toast.current.show({
+        severity: "success",
+        summary: "Success",
+        detail: "Device added successfully.",
+      });
     } catch (error) {
       console.error("Error adding new device: ", error);
+      toast.current.show({
+        severity: "error",
+        summary: "Error",
+        detail: "Error adding new device.",
+      });
     }
   };
-
-
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50">
+      <Toast ref={toast} />
       <div className="bg-white p-8 rounded-lg w-screen max-w-screen-sm">
         {currentPage === 1 && (
           <>

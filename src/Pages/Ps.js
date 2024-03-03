@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Card from "../components/Card";
 import LineChart from "../components/LineChart";
 import axios from "axios";
@@ -9,6 +9,7 @@ import BlockedListTable from "../components/BlockedListTable"; // Import Blocked
 
 function Ps() {
   const location = useLocation();
+  const navigateTo = useNavigate();
   const searchParams = new URLSearchParams(location.search);
   const id = decodeURIComponent(searchParams.get("id"));
   const [loading, setLoading] = useState(true); // Loading state
@@ -24,6 +25,10 @@ function Ps() {
     txCount: 0,
     rxCount: 0,
   }); // For card total
+  const token = localStorage.getItem("token");
+  if(!token) {
+    navigateTo("/");
+  }
 
   useEffect(() => {
     let initialFetchCompleted = false;

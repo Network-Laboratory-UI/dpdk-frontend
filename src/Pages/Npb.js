@@ -2,12 +2,13 @@ import React, { useEffect, useState } from "react";
 import Card from "../components/Card";
 import LineChart from "../components/LineChart";
 import axios from "axios";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import generateConfigFileContent from "../components/GenerateConfigFileContent";
 import ProgressSpinner from "../components/ProgressSpinner"; // Import ProgressSpinner component
 
 function Npb() {
   const location = useLocation();
+  const navigateTo = useNavigate();
   const searchParams = new URLSearchParams(location.search);
   const id = decodeURIComponent(searchParams.get("id"));
   const [loading, setLoading] = useState(true); // Loading state
@@ -23,6 +24,10 @@ function Npb() {
     txCount: 0,
     rxCount: 0,
   });
+  const token = localStorage.getItem("token");
+  if(!token) {
+    navigateTo("/");
+  }
 
   useEffect(() => {
     let initialFetchCompleted = false;

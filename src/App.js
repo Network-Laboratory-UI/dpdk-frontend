@@ -4,11 +4,20 @@ import Ps from "./Pages/Ps";
 
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Dashboard from "./Pages/Dashboard";
-
+import SignIn from "./Pages/SignIn";
+import Register from "./Pages/Register";
 
 const router = createBrowserRouter([
   {
-    path: "",
+    path: "/",
+    element: <SignIn />,
+  },
+  {
+    path: "register",
+    element: <Register />,
+  },
+  {
+    path: "dashboard",
     element: <Dashboard />,
     children: [
       {
@@ -22,10 +31,9 @@ const router = createBrowserRouter([
       {
         path: "ps",
         element: <Ps />,
-      }
+      },
     ],
   },
- 
 ]);
 
 const App = () => {

@@ -13,6 +13,10 @@ const Home = () => {
   const [policyServerCards, setPolicyServerCards] = useState([]);
   const [isAddNewDeviceOpen, setIsAddNewDeviceOpen] = useState(false);
   const [loading, setLoading] = useState(true); // Loading state for initial data fetch
+  const token = localStorage.getItem("token");
+  if(!token) {
+    navigateTo("/");
+  }
 
   useEffect(() => {
     // Restore state when coming back from another page
@@ -165,7 +169,7 @@ const Home = () => {
         {policyServerCards.map((card) => (
           <div
             key={card.id}
-            className="card-container hover:cursor-pointer"
+            className="card-container hover:cursor-pointer "
             onClick={() => handlePolicyServerCardClick(card.id)}
           >
             <PolicyServerCard {...card} />
