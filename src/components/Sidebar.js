@@ -1,8 +1,43 @@
+import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import axios from "axios";
 
 function Sidebar() {
   const location = useLocation();
   const navigateTo = useNavigate();
+  const [userData, setUserData] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get(
+          `${process.env.REACT_APP_BASE_URL}/user/profile`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setUserData(response.data.data);
+        console.log(response.data.data);
+        setLoading(false);
+      } catch (error) {
+        setError(error.message);
+        setLoading(false);
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
+
+  const handleLogout = () => {
+    // Handle logout logic here, such as clearing localStorage and navigating to the login page
+    localStorage.removeItem("token");
+    navigateTo("/");
+  };
 
   return (
     <div className="fixed top-0 bg-blue-primary h-screen w-2 text-white font-helvetica">
@@ -35,7 +70,9 @@ function Sidebar() {
       <ul className="py-4 w-full px-4">
         <li
           className={`flex items-center px-4 py-2 ${
-            location.pathname === "/" ? "bg-red-primary" : "hover:bg-gray-700"
+            location.pathname === "/dashboard"
+              ? "bg-red-primary"
+              : "hover:bg-gray-700"
           } rounded-lg cursor-pointer transition duration-100`}
           onClick={() => {
             navigateTo("/");
@@ -44,7 +81,7 @@ function Sidebar() {
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className={`h-8 ${
-              location.pathname === "/"
+              location.pathname === "/dashboard"
                 ? "bg-red-primary fill-white-primary"
                 : "fill-red-primary bg-white"
             }  rounded-lg p-1`}
@@ -77,6 +114,47 @@ function Sidebar() {
           </h4>
         </li>
       </ul>
+      <div className="py-4 w-full px-4 fixed inset-x-0 bottom-0">
+        <div className="flex items-center px-4 py-2 mt-auto">
+          {/* <svg
+            fill="none"
+            viewBox="0 0 50 50"
+            data-name="Layer 1"
+            className="h-8 fill-red-primary bg-white-primary rounded-lg p-1"
+            id="Layer_1"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <title />
+            <path d="M24,21A10,10,0,1,1,34,11,10,10,0,0,1,24,21ZM24,5a6,6,0,1,0,6,6A6,6,0,0,0,24,5Z" />
+            <path d="M42,47H6a2,2,0,0,1-2-2V39A16,16,0,0,1,20,23h8A16,16,0,0,1,44,39v6A2,2,0,0,1,42,47ZM8,43H40V39A12,12,0,0,0,28,27H20A12,12,0,0,0,8,39Z" />
+          </svg> */}
+          <button onClick={handleLogout}>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              className="h-8 fill-red-primary bg-white-primary rounded-lg p-1"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M15 12L2 12M2 12L5.5 9M2 12L5.5 15"
+                stroke="#1C274C"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <path
+                d="M9.00195 7C9.01406 4.82497 9.11051 3.64706 9.87889 2.87868C10.7576 2 12.1718 2 15.0002 2L16.0002 2C18.8286 2 20.2429 2 21.1215 2.87868C22.0002 3.75736 22.0002 5.17157 22.0002 8L22.0002 16C22.0002 18.8284 22.0002 20.2426 21.1215 21.1213C20.3531 21.8897 19.1752 21.9862 17 21.9983M9.00195 17C9.01406 19.175 9.11051 20.3529 9.87889 21.1213C10.5202 21.7626 11.4467 21.9359 13 21.9827"
+                stroke="#1C274C"
+                stroke-width="1.5"
+                stroke-linecap="round"
+              />
+            </svg>
+          </button>
+          <h4 className="ml-4 flex-shrink-0 w-1/6 overflow-hidden">
+            Hi, {userData.name}
+          </h4>{" "}
+        </div>
+      </div>
     </div>
   );
 }
