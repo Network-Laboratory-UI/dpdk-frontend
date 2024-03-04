@@ -1,13 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import generateConfigFileContent from "./GenerateConfigFileContent"; // Import the function
+import { Toast } from "primereact/toast";
 
 const AddNewDevice = ({ isOpen, onClose, onDeviceAdded }) => {
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
+  // const [ipAdd, setIpAdd] = useState("");
   const [periodStats, setPeriodStats] = useState("");
   const [periodSend, setPeriodSend] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const toast = useRef(null);
 
   const handleNextPage = () => {
     setCurrentPage(2);
@@ -16,6 +19,16 @@ const AddNewDevice = ({ isOpen, onClose, onDeviceAdded }) => {
   const handlePrevPage = () => {
     setCurrentPage(1);
   };
+
+  useEffect(() => {
+    if (isOpen) {
+      setName("");
+      setLocation("");
+      setPeriodStats("");
+      setPeriodSend("");
+      setCurrentPage(1);
+    }
+  }, [isOpen]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -26,15 +39,25 @@ const AddNewDevice = ({ isOpen, onClose, onDeviceAdded }) => {
         return;
       }
 
+      // Create NPB
       const npbResponse = await axios.post(
         `${process.env.REACT_APP_BASE_URL}/npb/createnpb`,
         { name, location }
       );
       const npbId = npbResponse.data.id; // Extract NPB ID from the response
 
+      // Create PS
+      const psResponse = await axios.post(
+        `${process.env.REACT_APP_BASE_URL}/ps/createps`,
+        { name, location }
+      );
+      const psId = psResponse.data.id; // Extract PS ID from the response
+
       // Generate configuration file content
       const configFileContent = generateConfigFileContent(
         npbId,
+        psId, // Ensure psId is declared before using it
+        process.env.REACT_APP_BASE_URL,
         periodStats,
         periodSend
       );
@@ -58,12 +81,6 @@ const AddNewDevice = ({ isOpen, onClose, onDeviceAdded }) => {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      // Send data to the respective API based on the type of device
-      await axios.post(`${process.env.REACT_APP_BASE_URL}/ps/createps`, {
-        name,
-        location,
-      });
-
       // Static configuration values
       const staticConfigValues = {
         maxPacketLen: 1500,
@@ -79,7 +96,9 @@ const AddNewDevice = ({ isOpen, onClose, onDeviceAdded }) => {
 
       // Combine static and dynamic values
       const configData = {
-        Id: npbId,
+        npbId: npbId,
+        psId: psId,
+        hostname: process.env.REACT_APP_BASE_URL,
         ...staticConfigValues,
         timerPeriodStats: periodStats,
         timerPeriodSend: periodSend,
@@ -87,7 +106,7 @@ const AddNewDevice = ({ isOpen, onClose, onDeviceAdded }) => {
 
       // Post the combined config data
       await axios.post(
-        `${process.env.REACT_APP_BASE_URL}/npb/config`,
+        `${process.env.REACT_APP_BASE_URL}/config/create`,
         configData
       );
 
@@ -95,9 +114,20 @@ const AddNewDevice = ({ isOpen, onClose, onDeviceAdded }) => {
       onDeviceAdded();
 
       // Close the popup after successful submission
-      onClose();
+      onClose(); // <-- Close the popup here
+
+      toast.current.show({
+        severity: "success",
+        summary: "Success",
+        detail: "Device added successfully.",
+      });
     } catch (error) {
       console.error("Error adding new device: ", error);
+      toast.current.show({
+        severity: "error",
+        summary: "Error",
+        detail: "Error adding new device.",
+      });
     }
   };
 
@@ -105,57 +135,93 @@ const AddNewDevice = ({ isOpen, onClose, onDeviceAdded }) => {
 
   return (
     <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50">
-      <div className="bg-white p-8 rounded-lg w-96">
+      <Toast ref={toast} />
+      <div className="bg-white p-8 rounded-lg w-screen max-w-screen-sm">
         {currentPage === 1 && (
           <>
             <h2 className="text-2xl font-bold mb-4">Add New Device</h2>
             <form onSubmit={handleSubmit}>
+              {/* Form fields with adjusted width and height */}
               <div className="mb-4">
-                <label htmlFor="name" className="block font-bold mb-1">
+                <label
+                  htmlFor="name"
+                  className="block font-normal mb-1 font-['Helvetica']"
+                >
                   Name:
                 </label>
                 <input
                   type="text"
                   id="name"
-                  className="border p-1 w-full"
+                  className="border p-2 w-full rounded-md font-['Helvetica']"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g. University Campus"
+                  maxLength={30} // Limit input to 30 characters
                 />
               </div>
               <div className="mb-4">
-                <label htmlFor="location" className="block font-bold mb-1">
+                <label
+                  htmlFor="location"
+                  className="block font-normal mb-1 font-['Helvetica']"
+                >
                   Location:
                 </label>
                 <input
                   type="text"
                   id="location"
-                  className="border p-1 w-full"
+                  className="border p-2 w-full rounded-md font-['Helvetica']"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
+                  placeholder="e.g. Building A, Floor 1, Room 101"
+                  maxLength={60} // Limit input to 30 characters
                 />
               </div>
               <div className="mb-4">
-                <label htmlFor="periodStats" className="block font-bold mb-1">
-                  Period Stats:
+                <label
+                  htmlFor="periodStats"
+                  className="block font-normal mb- font-['Helvetica']"
+                >
+                  Period Stats (1-60):
                 </label>
                 <input
                   type="number"
                   id="periodStats"
-                  className="border p-1 w-full"
+                  className="border p-2 w-full rounded-md font-['Helvetica']" // Adjusted height
                   value={periodStats}
-                  onChange={(e) => setPeriodStats(e.target.value)}
+                  onChange={(e) => {
+                    const value =
+                      e.target.value === ""
+                        ? ""
+                        : Math.min(Math.max(e.target.value, 1), 60);
+                    setPeriodStats(value);
+                  }}
+                  placeholder="Seconds in which data will be recorded (e.g data/2 seconds)"
+                  min="1"
+                  max="60"
                 />
               </div>
               <div className="mb-4">
-                <label htmlFor="periodSend" className="block font-bold mb-1">
-                  Period Send:
+                <label
+                  htmlFor="periodSend"
+                  className="block font-normal mb-1 font-['Helvetica']"
+                >
+                  Period Send (1-60):
                 </label>
                 <input
                   type="number"
                   id="periodSend"
-                  className="border p-1 w-full"
+                  className="border p-2 w-full rounded-md font-['Helvetica']" // Adjusted height
                   value={periodSend}
-                  onChange={(e) => setPeriodSend(e.target.value)}
+                  onChange={(e) => {
+                    const value =
+                      e.target.value === ""
+                        ? ""
+                        : Math.min(Math.max(e.target.value, 1), 60);
+                    setPeriodSend(value);
+                  }}
+                  placeholder="Minute in which data will be sent (e.g every 2 minutes)"
+                  min="1"
+                  max="60"
                 />
               </div>
               <div className="flex justify-between">
@@ -168,7 +234,7 @@ const AddNewDevice = ({ isOpen, onClose, onDeviceAdded }) => {
                 </button>
                 <button
                   type="button"
-                  className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded ml-2"
+                  className="bg-red-primary hover:bg-red-500 text-white px-4 py-2 rounded-md ml-2" // Rounded button
                   onClick={handleNextPage}
                 >
                   Next
@@ -191,7 +257,7 @@ const AddNewDevice = ({ isOpen, onClose, onDeviceAdded }) => {
               </button>
               <button
                 type="submit"
-                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded ml-2"
+                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md ml-2" // Rounded button
                 onClick={handleSubmit}
               >
                 Confirm & Download

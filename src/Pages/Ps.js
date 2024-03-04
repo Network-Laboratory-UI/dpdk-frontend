@@ -1,80 +1,139 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Card from "../components/Card";
 import LineChart from "../components/LineChart";
 import axios from "axios";
 import generateConfigFileContent from "../components/GenerateConfigFileContent";
-import BlockedListTable from "../components/BlockedListTable";
+import ProgressSpinner from "../components/ProgressSpinner"; // Import ProgressSpinner component
+import BlockedListTable from "../components/BlockedListTable"; // Import BlockedListTable component
 
 function Ps() {
-  const { id } = useParams(); // Extract the parameter from the URL
+  const location = useLocation();
+  const navigateTo = useNavigate();
+  const searchParams = new URLSearchParams(location.search);
+  const id = decodeURIComponent(searchParams.get("id"));
+  const [loading, setLoading] = useState(true); // Loading state
   const [policyServer, setPolicyServer] = useState({
     id: "",
     name: "",
     location: "",
   });
-  const [packetData, setPacketData] = useState([]);
-  const [rstClient, setRstClient] = useState(0);
-  const [rstServer, setRstServer] = useState(0);
-  const [txCount, setTxCount] = useState(0);
-  const [rxCount, setRxCount] = useState(0);
+  const [graphData, setGraphData] = useState([]); // For graph data
+  const [totalPacket, setTotalPacket] = useState({
+    rstClient: 0,
+    rstServer: 0,
+    txCount: 0,
+    rxCount: 0,
+  }); // For card total
+  const token = localStorage.getItem("token");
+  if (!token) {
+    navigateTo("/");
+  }
 
   useEffect(() => {
-    axios
-      .get(`${process.env.REACT_APP_BASE_URL}/ps/psid/${id}`) // Use the extracted parameter in the URL
-      .then((response) => {
-        const data = response.data;
-        setPolicyServer({
-          id: data.id,
-          name: data.name,
-          location: data.location,
-        });
-      })
-      .catch((error) => {
-        console.error("Error fetching Policy Server data: ", error);
-      });
+    let initialFetchCompleted = false;
 
-    axios
-      .get(`${process.env.REACT_APP_BASE_URL}/ps/ps-packet/${id}`)
-      .then((response) => {
-        const data = response.data;
-        // Check if data is an array and not empty
-        if (Array.isArray(data) && data.length > 0) {
-          setPacketData(data);
-        } else {
-          // If data is empty, update packetData with the response message
-          setPacketData([{ message: "No Policy Server Packets found" }]);
+    const fetchData = async () => {
+      try {
+        if (!initialFetchCompleted) {
+          setLoading(true); // Show loading state only for initial fetch
         }
-      })
-      .catch((error) => {
-        console.error("Error fetching packet data: ", error);
-        // If there's an error, update packetData with an error message
-        setPacketData([{ message: "Error fetching packet data" }]);
-      });
+
+        // Fetch graph data
+        const graphResponse = await axios.get(
+          `${process.env.REACT_APP_BASE_URL}/ps/ps-packet/${id}`
+        );
+        const graphData = graphResponse.data;
+
+        // Check if data is an array and not empty
+        if (Array.isArray(graphData) && graphData.length > 0) {
+          setGraphData(graphData);
+        } else {
+          // If data is empty, update graphData with an error message
+          setGraphData([{ message: "No Policy Server Packets found" }]);
+        }
+
+        // Fetch card total data
+        const totalResponse = await axios.get(
+          `${process.env.REACT_APP_BASE_URL}/ps/ps-packet-total/${id}`
+        );
+        const totalData = totalResponse.data;
+
+        // Update totalPacket
+        setTotalPacket({
+          rstClient: formatNumber(totalData.psPacket.rstClient),
+          rstServer: formatNumber(totalData.psPacket.rstServer),
+          txCount: formatNumber(totalData.psPacket.tx_1_count),
+          rxCount: formatNumber(totalData.psPacket.rx_0_count),
+        });
+
+        // Fetch Policy Server info
+        const policyServerResponse = await axios.get(
+          `${process.env.REACT_APP_BASE_URL}/ps/psid/${id}`
+        );
+        const policyServerData = policyServerResponse.data;
+
+        console.log("Policy Server Data: ", policyServerData);
+
+        setPolicyServer({
+          id: policyServerData.id,
+          name: policyServerData.name,
+          location: policyServerData.location,
+        });
+
+        if (!initialFetchCompleted) {
+          setLoading(false); // Hide loading state after initial fetch is complete
+          initialFetchCompleted = true; // Set initial fetch completed flag
+        }
+      } catch (error) {
+        console.error("Error fetching data: ", error);
+        setLoading(false); // Hide loading state if there's an error
+      }
+    };
+
+    // Initial fetch
+    fetchData();
+
+    // Set interval to fetch data every 30 seconds
+    const intervalId = setInterval(fetchData, 5000);
+
+    // Cleanup function to clear interval
+    return () => clearInterval(intervalId);
   }, [id]);
 
-  useEffect(() => {
-    setRstClient(
-      packetData.reduce((total, packet) => total + packet.rst_client, 0)
-    );
-    setRstServer(
-      packetData.reduce((total, packet) => total + packet.rst_server, 0)
-    );
-    setTxCount(
-      packetData.reduce((total, packet) => total + packet.tx_count, 0)
-    );
-    setRxCount(
-      packetData.reduce((total, packet) => total + packet.rx_count, 0)
-    );
-  }, [packetData]);
+  // Function to format numbers
+  const formatNumber = (num) => {
+    if (num >= 1e18) {
+      return (num / 1e18).toFixed(2).replace(/\.0$/, "") + " Qi";
+    }
+    if (num >= 1e15) {
+      return (num / 1e15).toFixed(2).replace(/\.0$/, "") + " Qa";
+    }
+    if (num >= 1e12) {
+      return (num / 1e12).toFixed(2).replace(/\.0$/, "") + " T";
+    }
+    if (num >= 1e9) {
+      return (num / 1e9).toFixed(2).replace(/\.0$/, "") + " B";
+    }
+    if (num >= 1e6) {
+      return (num / 1e6).toFixed(2).replace(/\.0$/, "") + " M";
+    }
+    if (num >= 1e3) {
+      return (num / 1e3).toFixed(2).replace(/\.0$/, "") + " K";
+    }
+    return num;
+  };
 
   const handleDownloadConfig = () => {
     axios
-      .get(`${process.env.REACT_APP_BASE_URL}/npb/config/${id}`)
+      .get(`${process.env.REACT_APP_BASE_URL}/config/${id}`)
       .then((response) => {
-        const { Id, timerPeriodStats, timerPeriodSend } = response.data;
+        const { npbId, psId, hostname, timerPeriodStats, timerPeriodSend } =
+          response.data;
         const configFileContent = generateConfigFileContent(
-          Id,
+          npbId,
+          psId,
+          hostname,
           timerPeriodStats,
           timerPeriodSend
         );
@@ -94,114 +153,127 @@ function Ps() {
   };
 
   return (
-    <div className="max-w-screen w-screen">
-      <div className="absolute top-0 right-0 mt-10 mr-10 flex items-center">
-        <button
-          onClick={handleDownloadConfig}
-          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded flex items-center"
-        >
-          <span className="mr-2">Download Config</span>
-          <img
-            src="/download_logo.svg"
-            alt="Download Icon"
-            className="h-5 w-5"
-            style={{ fill: "white" }}
-          />
-        </button>
-      </div>
-      <header>
-        <div className="flex items-center space-x-1 ml-10 mt-6">
-          <h2 className="text-gray-400 font-helvetica text-[1] font-normal">
-            Pages
-          </h2>
-          <h2 className="text-black font-helvetica text-[1] font-normal">
-            / Dashboard
-          </h2>
+    <div className="relative ml-3">
+      {/* Loading spinner in the center */}
+      {loading && (
+        <div className="fixed inset-0 flex items-center justify-center">
+          <ProgressSpinner />
         </div>
-        <p className="text-gray-700 font-helvetica text-[2] font-bold ml-10">
-          Status
-        </p>
-        <div className="w-[416px] h-4 text-gray-700 text-2xl font-bold font-['Helvetica'] mt-6 ml-10">
-          Policy Server - {policyServer.id}
-        </div>
-        <div className="w-[416px] h-4 text-gray-700 text-xl font-normal font-['Helvetica'] mt-4 ml-10">
-          {policyServer.name}
-        </div>
-        <div className="text-gray-700 text-base font-normal font-['Helvetica'] mt-4 ml-10 italic">
-          Location: {policyServer.location}
-        </div>
-      </header>
+      )}
+      {!loading && (
+        <>
+          <div className="absolute top-0 right-0 mt-10 mr-10 flex">
+            <button
+              onClick={handleDownloadConfig}
+              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded flex items-center font-['Helvetica'] font-bold"
+            >
+              <span className="mr-2">Download Config</span>
+              <img
+                src="/download_logo.svg"
+                alt="Download Icon"
+                className="h-5"
+                style={{ fill: "white" }}
+              />
+            </button>
+          </div>
+          <header>
+            <div className="flex items-center space-x-1 mt-3">
+              <p className="text-gray-400 font-['Helvetica'] text-lg font-normal">
+                Pages
+              </p>
+              <p className="text-gray-600 font-['Helvetica'] text-lg font-bold">
+                / Home
+              </p>
+            </div>
+            <p className="text-gray-700 font-['Helvetica'] text-lg font-bold ">
+              Status
+            </p>
+            <div className="w-4 h-4 text-gray-700 text-2xl font-normal font-['Helvetica'] mt-3 ">
+              Policy Server
+            </div> 
+            <div className="w-4 h-4 text-black-700 text-5xl font-bold font-['Helvetica'] mt-3">
+              {policyServer.name}
+            </div>
+            <p className="text-gray-400 w-4 font-['Helvetica'] text-sm font-bold mt-5">
+            ID: {policyServer.id}
+            </p>
+            <div className="text-gray-700 text-base font-normal font-['Helvetica'] italic">
+              Location: {policyServer.location}
+            </div>
+          </header>
 
-      <div className="flex flex-row space-x-10 ml-10 mr-20">
-        <div>
-          <Card
-            hitType="Reset Client Hit"
-            number={rstClient.toString()}
-            packet="Packet"
-          />
-        </div>
-        <div>
-          <Card
-            hitType="Reset Server Hit"
-            number={rstServer.toString()}
-            packet="Packet"
-          />
-        </div>
-        <div>
-          <Card
-            hitType="TX Count"
-            number={txCount.toString()}
-            packet="Packet"
-          />
-        </div>
-        <div>
-          <Card
-            hitType="RX Count"
-            number={rxCount.toString()}
-            packet="Packet"
-          />
-        </div>
-      </div>
-      <div className="mt-10 ml-10 shadow-sm">
-        <LineChart
-          title="Reset Client Hit"
-          packetData={packetData.map((data) => ({
-            time: data.time,
-            value: data.rst_client,
-          }))}
-        />
-      </div>
-      <div className="mt-10 ml-10 shadow-sm">
-        <LineChart
-          title="Reset Server Hit"
-          packetData={packetData.map((data) => ({
-            time: data.time,
-            value: data.rst_server,
-          }))}
-        />
-      </div>
-      <div className="mt-10 ml-10 shadow-sm">
-        <LineChart
-          title="TX Count"
-          packetData={packetData.map((data) => ({
-            time: data.time,
-            value: data.tx_count,
-          }))}
-        />
-      </div>
-      <div className="mt-10 ml-10 shadow-sm">
-        <LineChart
-          title="RX Count"
-          packetData={packetData.map((data) => ({
-            time: data.time,
-            value: data.rx_count,
-          }))}
-        />
-      </div>
-      {/* Render BlockedListTable component and pass the id */}
-      <div className="mt-10 ml-10 shadow-sm">
-        <BlockedListTable id={id} />
-      </div>
+          <div className="flex flex-row mr-10">
+            <div className="mr-2">
+              <Card
+                hitType="Reset Client Hit"
+                number={totalPacket.rstClient}
+                packet="Packet"
+              />
+            </div>
+            <div className="mr-2">
+              <Card
+                hitType="Reset Server Hit"
+                number={totalPacket.rstServer}
+                packet="Packet"
+              />
+            </div>
+            <div className="mr-2">
+              <Card
+                hitType="TX Count"
+                number={totalPacket.txCount}
+                packet="Packet"
+              />
+            </div>
+            <div className="mr-2">
+              <Card
+                hitType="RX Count"
+                number={totalPacket.rxCount}
+                packet="Packet"
+              />
+            </div>
+          </div>
+          <div className="mt-10 mr-10 shadow-sm">
+            <LineChart
+              title="Reset Client Hit"
+              packetData={graphData.map((data) => ({
+                time: data.time,
+                value: data.rstClient,
+              }))}
+            />
+          </div>
+          <div className="mt-10 mr-10 shadow-sm">
+            <LineChart
+              title="Reset Server Hit"
+              packetData={graphData.map((data) => ({
+                time: data.time,
+                value: data.rstServer,
+              }))}
+            />
+          </div>
+          <div className="mt-10 mr-10 shadow-sm">
+            <LineChart
+              title="TX Count"
+              packetData={graphData.map((data) => ({
+                time: data.time,
+                value: data.tx_1_count,
+              }))}
+            />
+          </div>
+          <div className="mt-10 mr-10 shadow-sm">
+            <LineChart
+              title="RX Count"
+              packetData={graphData.map((data) => ({
+                time: data.time,
+                value: data.rx_0_count,
+              }))}
+            />
+          </div>
+          {/* Render BlockedListTable component and pass the id */}
+          <div className="mt-10 mr-10 shadow-sm">
+            <BlockedListTable id={id} />
+          </div>
+        </>
+      )}
     </div>
   );
 }

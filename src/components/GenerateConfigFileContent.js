@@ -1,4 +1,4 @@
-const generateConfigFileContent = (npbId, periodStats, periodSend) => {
+const generateConfigFileContent = (npbId, psId, ip_add, periodStats, periodSend) => {
   // Define the configuration content with dynamic and hardcoded values
   const configFileContent = `# Packet Processor settings
 MAX_PACKET_LEN= 1500
@@ -9,8 +9,10 @@ MBUF_CACHE_SIZE= 250
 BURST_SIZE= 32
 MAX_TCP_PAYLOAD_LEN= 1024
 
-# NPB Settings
-ID= ${npbId}
+# Settings
+ID_NPB= ${npbId}
+ID_PS= ${psId}
+HOSTNAME= ${ip_add}
 
 # Statsd settings
 STAT_FILE= stats/stats

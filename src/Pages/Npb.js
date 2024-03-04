@@ -2,47 +2,63 @@ import React, { useEffect, useState } from "react";
 import Card from "../components/Card";
 import LineChart from "../components/LineChart";
 import axios from "axios";
-import { useParams } from "react-router-dom";
-import generateConfigFileContent from "../components/GenerateConfigFileContent"; // Import generateConfigFileContent
+import { useLocation, useNavigate } from "react-router-dom";
+import generateConfigFileContent from "../components/GenerateConfigFileContent";
+import ProgressSpinner from "../components/ProgressSpinner"; // Import ProgressSpinner component
 
 function Npb() {
-  const { id } = useParams();
+  const location = useLocation();
+  const navigateTo = useNavigate();
+  const searchParams = new URLSearchParams(location.search);
+  const id = decodeURIComponent(searchParams.get("id"));
+  const [loading, setLoading] = useState(true); // Loading state
   const [packetBroker, setPacketBroker] = useState({
     id: "",
     name: "",
     location: "",
   });
   const [packetData, setPacketData] = useState([]);
-  const [httpCount, setHttpCount] = useState(0);
-  const [httpsCount, setHttpsCount] = useState(0);
-  const [txCount, setTxCount] = useState(0);
-  const [rxCount, setRxCount] = useState(0);
+  const [totalPacket, setTotalPacket] = useState({
+    httpCount: 0,
+    httpsCount: 0,
+    txCount: 0,
+    rxCount: 0,
+  });
+  const token = localStorage.getItem("token");
+  if (!token) {
+    navigateTo("/");
+  }
 
   useEffect(() => {
-    axios
-      .get(`${process.env.REACT_APP_BASE_URL}/npb/npbid/${id}`)
-      .then((response) => {
-        const data = response.data;
-        setPacketBroker({
-          id: data.id,
-          name: data.name,
-          location: data.location,
-        });
-      })
-      .catch((error) => {
-        console.error("Error fetching packet broker data: ", error);
-      });
+    let initialFetchCompleted = false;
 
-    axios
-      .get(`${process.env.REACT_APP_BASE_URL}/npb/npb-packet/${id}`)
-      .then((response) => {
-        const data = response.data;
-        if (Array.isArray(data) && data.length > 0) {
+    const fetchData = async () => {
+      try {
+        if (!initialFetchCompleted) {
+          setLoading(true); // Show loading state only for initial fetch
+        }
+
+        // Fetch total packet data for the card
+        const totalResponse = await axios.get(
+          `${process.env.REACT_APP_BASE_URL}/npb/npb-packet-total/${id}`
+        );
+        const totalData = totalResponse.data;
+        setTotalPacket({
+          httpCount: formatNumber(totalData.npbPackets.http_count),
+          httpsCount: formatNumber(totalData.npbPackets.https_count),
+          txCount: formatNumber(totalData.npbPackets.tx_0_count),
+          rxCount: formatNumber(totalData.npbPackets.rx_1_count),
+        });
+
+        // Fetch graph data
+        const graphResponse = await axios.get(
+          `${process.env.REACT_APP_BASE_URL}/npb/npb-packet/${id}`
+        );
+        const graphData = graphResponse.data;
+        if (Array.isArray(graphData) && graphData.length > 0) {
           // Convert UTC datetime to local time for each packet
-          const localData = data.map((packet) => {
-            // Parse the UTC date string manually
+          const localData = graphData.map((packet) => {
             const utcDate = new Date(packet.time);
-            // Convert UTC date to local date string
             const localDateString = utcDate.toLocaleString();
             return {
               ...packet,
@@ -53,35 +69,51 @@ function Npb() {
         } else {
           setPacketData([{ message: "No Npb Packets found" }]);
         }
-      })
-      .catch((error) => {
-        console.error("Error fetching packet data: ", error);
-        setPacketData([{ message: "Error fetching packet data" }]);
-      });
-  }, [id]);
 
-  useEffect(() => {
-    setHttpCount(
-      packetData.reduce((total, packet) => total + packet.http_count, 0)
-    );
-    setHttpsCount(
-      packetData.reduce((total, packet) => total + packet.https_count, 0)
-    );
-    setTxCount(
-      packetData.reduce((total, packet) => total + packet.tx_0_count, 0)
-    );
-    setRxCount(
-      packetData.reduce((total, packet) => total + packet.rx_1_count, 0)
-    );
-  }, [packetData]);
+        // Fetch Policy Server info
+        const packetBrokerResponse = await axios.get(
+          `${process.env.REACT_APP_BASE_URL}/npb/npbid/${id}`
+        );
+        const packetBrokerData = packetBrokerResponse.data;
+
+        console.log("Packet Broker Data: ", packetBrokerData);
+
+        setPacketBroker({
+          id: packetBrokerData.id,
+          name: packetBrokerData.name,
+          location: packetBrokerData.location,
+        });
+
+        if (!initialFetchCompleted) {
+          setLoading(false); // Hide loading state after initial fetch is complete
+          initialFetchCompleted = true; // Set initial fetch completed flag
+        }
+      } catch (error) {
+        console.error("Error fetching data: ", error);
+        setLoading(false); // Hide loading state if there's an error
+      }
+    };
+
+    // Initial fetch
+    fetchData();
+
+    // Set interval to fetch data every 30 seconds
+    const intervalId = setInterval(fetchData, 30000);
+
+    // Cleanup function to clear interval
+    return () => clearInterval(intervalId);
+  }, [id]);
 
   const handleDownloadConfig = () => {
     axios
-      .get(`${process.env.REACT_APP_BASE_URL}/npb/config/${id}`)
+      .get(`${process.env.REACT_APP_BASE_URL}/config/${id}`)
       .then((response) => {
-        const { Id, timerPeriodStats, timerPeriodSend } = response.data;
+        const { npbId, psId, hostname, timerPeriodStats, timerPeriodSend } =
+          response.data;
         const configFileContent = generateConfigFileContent(
-          Id,
+          npbId,
+          psId,
+          hostname,
           timerPeriodStats,
           timerPeriodSend
         );
@@ -100,110 +132,146 @@ function Npb() {
       });
   };
 
+  // Function to format numbers
+  const formatNumber = (num) => {
+    if (num >= 1e18) {
+      return (num / 1e18).toFixed(2).replace(/\.0$/, "") + " Qi";
+    }
+    if (num >= 1e15) {
+      return (num / 1e15).toFixed(2).replace(/\.0$/, "") + " Qa";
+    }
+    if (num >= 1e12) {
+      return (num / 1e12).toFixed(2).replace(/\.0$/, "") + " T";
+    }
+    if (num >= 1e9) {
+      return (num / 1e9).toFixed(2).replace(/\.0$/, "") + " B";
+    }
+    if (num >= 1e6) {
+      return (num / 1e6).toFixed(2).replace(/\.0$/, "") + " M";
+    }
+    if (num >= 1e3) {
+      return (num / 1e3).toFixed(2).replace(/\.0$/, "") + " K";
+    }
+    return num;
+  };
+
   return (
-    <div className="relative w-screen">
-      <div className="absolute top-0 right-0 mt-10 mr-10 flex items-center">
-        <button
-          onClick={handleDownloadConfig}
-          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded flex items-center"
-        >
-          <span className="mr-2">Download Config</span>
-          <img
-            src="/download_logo.svg"
-            alt="Download Icon"
-            className="h-5 w-1"
-            style={{ fill: "white" }}
-          />
-        </button>
-      </div>
-      <header>
-        <div className="flex items-center space-x-1 ml-10 mt-3">
-          <h2 className="text-gray-400 font-helvetica text-[1] font-normal">
-            Pages
-          </h2>
-          <h2 className="text-black font-helvetica text-[1] font-normal">
-            / Dashboard
-          </h2>
+    <div className="relative ml-3">
+      {/* Loading spinner in the center */}
+      {loading && (
+        <div className="fixed inset-0 flex items-center justify-center">
+          <ProgressSpinner />
         </div>
-        <p className="text-gray-700 font-helvetica text-[2] font-bold ml-10">
-          Status
-        </p>
-        <div className="w-4 h-4 text-gray-700 text-2xl font-bold font-['Helvetica'] mt-3 ml-10">
-          Packet Broker - {packetBroker.id}
-        </div>
-        <div className="w-4 h-4 text-gray-700 text-xl font-normal font-['Helvetica'] mt-4 ml-10">
-          {packetBroker.name}
-        </div>
-        <div className="text-gray-700 text-base font-normal font-['Helvetica'] mt-4 ml-10 italic">
-          Location: {packetBroker.location}
-        </div>
-      </header>
-      <div className="flex flex-row space-x-10 ml-10 mr-10">
-        <div>
-          <Card
-            hitType="HTTP Count"
-            number={httpCount.toString()}
-            packet="Packet"
-          />
-        </div>
-        <div>
-          <Card
-            hitType="HTTPS Count"
-            number={httpsCount.toString()}
-            packet="Packet"
-          />
-        </div>
-        <div>
-          <Card
-            hitType="TX Count"
-            number={txCount.toString()}
-            packet="Packet"
-          />
-        </div>
-        <div>
-          <Card
-            hitType="RX Count"
-            number={rxCount.toString()}
-            packet="Packet"
-          />
-        </div>
-      </div>
-      <div className="mt-10 ml-10 mr-10 shadow-sm">
-        <LineChart
-          title="HTTP Count"
-          packetData={packetData.map((data) => ({
-            time: data.time,
-            value: data.http_count,
-          }))}
-        />
-      </div>
-      <div className="mt-10 ml-10 mr-10 shadow-sm">
-        <LineChart
-          title="HTTPS Count"
-          packetData={packetData.map((data) => ({
-            time: data.time,
-            value: data.https_count,
-          }))}
-        />
-      </div>
-      <div className="mt-10 ml-10 mr-10 shadow-sm">
-        <LineChart
-          title="TX Count"
-          packetData={packetData.map((data) => ({
-            time: data.time,
-            value: data.tx_0_count,
-          }))}
-        />
-      </div>
-      <div className="mt-10 ml-10 mr-10 mb-20 shadow-sm">
-        <LineChart
-          title="RX Count"
-          packetData={packetData.map((data) => ({
-            time: data.time,
-            value: data.rx_1_count,
-          }))}
-        />
-      </div>
+      )}
+      {!loading && (
+        <>
+          <div className="absolute top-0 right-0 mt-10 mr-10 flex">
+            <button
+              onClick={handleDownloadConfig}
+              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded flex items-center font-['Helvetica'] font-bold"
+            >
+              <span className="mr-2">Download Config</span>
+              <img
+                src="/download_logo.svg"
+                alt="Download Icon"
+                className="h-5"
+                style={{ fill: "white" }}
+              />
+            </button>
+          </div>
+          <header>
+            <div className="flex items-center space-x-1 mt-3">
+              <p className="text-gray-400 font-['Helvetica'] text-lg font-normal">
+                Pages
+              </p>
+              <p className="text-gray-600 font-['Helvetica'] text-lg font-bold">
+                / Home
+              </p>
+            </div>
+            <p className="text-gray-700 font-['Helvetica'] text-lg font-bold ">
+              Status
+            </p>
+            <div className="w-4 h-4 text-gray-700 text-2xl font-normal font-['Helvetica'] mt-3 ">
+              Packet Broker
+            </div> 
+            <div className="w-4 h-4 text-black-700 text-5xl font-bold font-['Helvetica'] mt-3">
+              {packetBroker.name}
+            </div>
+            <p className="text-gray-400 w-4 font-['Helvetica'] text-sm font-bold mt-5">
+            ID: {packetBroker.id}
+            </p>
+            <div className="text-gray-700 text-base font-normal font-['Helvetica'] italic">
+              Location: {packetBroker.location}
+            </div>
+          </header>
+          <div className="flex flex-row mr-10">
+            <div className="mr-2">
+              <Card
+                hitType="HTTP Count"
+                number={totalPacket.httpCount}
+                packet="Packet"
+              />
+            </div>
+            <div className="mr-2">
+              <Card
+                hitType="HTTPS Count"
+                number={totalPacket.httpsCount}
+                packet="Packet"
+              />
+            </div>
+            <div className="mr-2">
+              <Card
+                hitType="TX Count"
+                number={totalPacket.txCount}
+                packet="Packet"
+              />
+            </div>
+            <div className="mr-2">
+              <Card
+                hitType="RX Count"
+                number={totalPacket.rxCount}
+                packet="Packet"
+              />
+            </div>
+          </div>
+          <div className="mt-10 mr-10 shadow-sm">
+            <LineChart
+              title="HTTP Count"
+              packetData={packetData.map((data) => ({
+                time: data.time,
+                value: data.http_count,
+              }))}
+            />
+          </div>
+          <div className="mt-10 mr-10 shadow-sm">
+            <LineChart
+              title="HTTPS Count"
+              packetData={packetData.map((data) => ({
+                time: data.time,
+                value: data.https_count,
+              }))}
+            />
+          </div>
+          <div className="mt-10 mr-10 shadow-sm">
+            <LineChart
+              title="TX Count"
+              packetData={packetData.map((data) => ({
+                time: data.time,
+                value: data.tx_0_count,
+              }))}
+            />
+          </div>
+          <div className="mt-10 mr-10 mb-20 shadow-sm">
+            <LineChart
+              title="RX Count"
+              packetData={packetData.map((data) => ({
+                time: data.time,
+                value: data.rx_1_count,
+              }))}
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 }
