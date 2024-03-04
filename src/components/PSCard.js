@@ -33,15 +33,13 @@ const HomeCard = ({ id, name, status, location }) => {
           Policy Server
         </div>
         <div className="w-[74px] h-5 left-[30px] top-[280px] absolute">
-          <div
+        <div
             style={{
-              backgroundColor: status === "Active" ? "#E2FBD7" : "#FBD7D7",
+              backgroundColor: status === "Active" ? "#E2FBD7" : "#FBD7D7", borderRadius:'3px', padding:'5px'
             }}
-            className="w-[75px] h-7 top-[-4px] absolute rounded-md"
-          ></div>
-          <div className="left-[14px] top-0 absolute text-black text-sm font-normal font-['Helvetica'] leading-tight">
-            {status}
-          </div>
+            className="items-center text-center text-sm font-['Helvetica'] font-normal"
+          > {status}</div>
+         
         </div>
         {/* Removed the SVG section */}
         <div className="mt-4 text-black text-[32px] font-bold font-['Helvetica'] absolute left-[30px] top-[73px] whitespace-pre-line">

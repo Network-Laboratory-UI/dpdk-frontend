@@ -190,11 +190,14 @@ function Ps() {
             </p>
             <div className="w-4 h-4 text-gray-700 text-2xl font-normal font-['Helvetica'] mt-3 ">
               Policy Server
-            </div>
-            <div className="w-4 h-4 text-blac-700 text-5xl font-bold font-['Helvetica'] mt-4">
+            </div> 
+            <div className="w-4 h-4 text-black-700 text-5xl font-bold font-['Helvetica'] mt-3">
               {policyServer.name}
             </div>
-            <div className="text-gray-700 text-base font-normal font-['Helvetica'] mt-5 italic">
+            <p className="text-gray-400 w-4 font-['Helvetica'] text-sm font-bold mt-5">
+            ID: {policyServer.id}
+            </p>
+            <div className="text-gray-700 text-base font-normal font-['Helvetica'] italic">
               Location: {policyServer.location}
             </div>
           </header>
