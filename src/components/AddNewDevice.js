@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import generateConfigFileContent from "./GenerateConfigFileContent"; // Import the function
 import { Toast } from "primereact/toast";
@@ -19,6 +19,16 @@ const AddNewDevice = ({ isOpen, onClose, onDeviceAdded }) => {
   const handlePrevPage = () => {
     setCurrentPage(1);
   };
+
+  useEffect(() => {
+    if (isOpen) {
+      setName("");
+      setLocation("");
+      setPeriodStats("");
+      setPeriodSend("");
+      setCurrentPage(1);
+    }
+  }, [isOpen]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -105,6 +115,7 @@ const AddNewDevice = ({ isOpen, onClose, onDeviceAdded }) => {
 
       // Close the popup after successful submission
       onClose(); // <-- Close the popup here
+
       toast.current.show({
         severity: "success",
         summary: "Success",
@@ -141,10 +152,11 @@ const AddNewDevice = ({ isOpen, onClose, onDeviceAdded }) => {
                 <input
                   type="text"
                   id="name"
-                  className="border p-2 w-full rounded-md font-['Helvetica']" // Adjusted height
+                  className="border p-2 w-full rounded-md font-['Helvetica']"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. University Campus"
+                  maxLength={30} // Limit input to 30 characters
                 />
               </div>
               <div className="mb-4">
@@ -157,10 +169,11 @@ const AddNewDevice = ({ isOpen, onClose, onDeviceAdded }) => {
                 <input
                   type="text"
                   id="location"
-                  className="border p-2 w-full rounded-md font-['Helvetica']" // Adjusted height
+                  className="border p-2 w-full rounded-md font-['Helvetica']"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   placeholder="e.g. Building A, Floor 1, Room 101"
+                  maxLength={60} // Limit input to 30 characters
                 />
               </div>
               <div className="mb-4">
@@ -168,15 +181,23 @@ const AddNewDevice = ({ isOpen, onClose, onDeviceAdded }) => {
                   htmlFor="periodStats"
                   className="block font-normal mb- font-['Helvetica']"
                 >
-                  Period Stats:
+                  Period Stats (1-60):
                 </label>
                 <input
                   type="number"
                   id="periodStats"
                   className="border p-2 w-full rounded-md font-['Helvetica']" // Adjusted height
                   value={periodStats}
-                  onChange={(e) => setPeriodStats(e.target.value)}
+                  onChange={(e) => {
+                    const value =
+                      e.target.value === ""
+                        ? ""
+                        : Math.min(Math.max(e.target.value, 1), 60);
+                    setPeriodStats(value);
+                  }}
                   placeholder="Seconds in which data will be recorded (e.g data/2 seconds)"
+                  min="1"
+                  max="60"
                 />
               </div>
               <div className="mb-4">
@@ -184,15 +205,23 @@ const AddNewDevice = ({ isOpen, onClose, onDeviceAdded }) => {
                   htmlFor="periodSend"
                   className="block font-normal mb-1 font-['Helvetica']"
                 >
-                  Period Send:
+                  Period Send (1-60):
                 </label>
                 <input
                   type="number"
                   id="periodSend"
                   className="border p-2 w-full rounded-md font-['Helvetica']" // Adjusted height
                   value={periodSend}
-                  onChange={(e) => setPeriodSend(e.target.value)}
+                  onChange={(e) => {
+                    const value =
+                      e.target.value === ""
+                        ? ""
+                        : Math.min(Math.max(e.target.value, 1), 60);
+                    setPeriodSend(value);
+                  }}
                   placeholder="Minute in which data will be sent (e.g every 2 minutes)"
+                  min="1"
+                  max="60"
                 />
               </div>
               <div className="flex justify-between">

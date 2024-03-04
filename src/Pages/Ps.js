@@ -26,7 +26,7 @@ function Ps() {
     rxCount: 0,
   }); // For card total
   const token = localStorage.getItem("token");
-  if(!token) {
+  if (!token) {
     navigateTo("/");
   }
 
@@ -188,13 +188,13 @@ function Ps() {
             <p className="text-gray-700 font-['Helvetica'] text-lg font-bold ">
               Status
             </p>
-            <div className="w-4 h-4 text-gray-700 text-2xl font-bold font-['Helvetica'] mt-3 ">
+            <div className="w-4 h-4 text-gray-700 text-2xl font-normal font-['Helvetica'] mt-3 ">
               Policy Server
             </div>
-            <div className="w-4 h-4 text-gray-700 text-xl font-normal font-['Helvetica'] mt-4">
+            <div className="w-4 h-4 text-blac-700 text-5xl font-bold font-['Helvetica'] mt-4">
               {policyServer.name}
             </div>
-            <div className="text-gray-700 text-base font-normal font-['Helvetica'] mt-4 italic">
+            <div className="text-gray-700 text-base font-normal font-['Helvetica'] mt-5 italic">
               Location: {policyServer.location}
             </div>
           </header>

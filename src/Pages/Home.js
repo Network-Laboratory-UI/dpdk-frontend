@@ -87,7 +87,6 @@ const Home = () => {
   };
 
   const closePopup = () => {
-    console.log("Closing popup"); // Add this line for debugging
     setIsAddNewDeviceOpen(false);
   };
 

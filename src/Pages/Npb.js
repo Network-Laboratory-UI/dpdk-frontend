@@ -25,7 +25,7 @@ function Npb() {
     rxCount: 0,
   });
   const token = localStorage.getItem("token");
-  if(!token) {
+  if (!token) {
     navigateTo("/");
   }
 
@@ -191,13 +191,13 @@ function Npb() {
             <p className="text-gray-700 font-['Helvetica'] text-lg font-bold ">
               Status
             </p>
-            <div className="w-4 h-4 text-gray-700 text-2xl font-bold font-['Helvetica'] mt-3 ">
+            <div className="w-4 h-4 text-gray-700 text-2xl font-normal font-['Helvetica'] mt-3 ">
               Packet Broker
             </div>
-            <div className="w-4 h-4 text-gray-700 text-xl font-normal font-['Helvetica'] mt-4">
+            <div className="w-4 h-4 text-black-700 text-5xl font-bold font-['Helvetica'] mt-4">
               {packetBroker.name}
             </div>
-            <div className="text-gray-700 text-base font-normal font-['Helvetica'] mt-4 italic">
+            <div className="text-gray-700 text-base font-normal font-['Helvetica'] mt-5 italic">
               Location: {packetBroker.location}
             </div>
           </header>
