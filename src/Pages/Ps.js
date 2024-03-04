@@ -199,7 +199,7 @@ function Ps() {
             </div>
           </header>
 
-          <div className="flex flex-row   mr-20">
+          <div className="flex flex-row mr-10">
             <div className="mr-2">
               <Card
                 hitType="Reset Client Hit"
@@ -229,7 +229,7 @@ function Ps() {
               />
             </div>
           </div>
-          <div className="mt-10  shadow-sm">
+          <div className="mt-10 mr-10 shadow-sm">
             <LineChart
               title="Reset Client Hit"
               packetData={graphData.map((data) => ({
@@ -238,7 +238,7 @@ function Ps() {
               }))}
             />
           </div>
-          <div className="mt-10  shadow-sm">
+          <div className="mt-10 mr-10 shadow-sm">
             <LineChart
               title="Reset Server Hit"
               packetData={graphData.map((data) => ({
@@ -247,7 +247,7 @@ function Ps() {
               }))}
             />
           </div>
-          <div className="mt-10  shadow-sm">
+          <div className="mt-10 mr-10 shadow-sm">
             <LineChart
               title="TX Count"
               packetData={graphData.map((data) => ({
@@ -256,7 +256,7 @@ function Ps() {
               }))}
             />
           </div>
-          <div className="mt-10  shadow-sm">
+          <div className="mt-10 mr-10 shadow-sm">
             <LineChart
               title="RX Count"
               packetData={graphData.map((data) => ({
@@ -266,7 +266,7 @@ function Ps() {
             />
           </div>
           {/* Render BlockedListTable component and pass the id */}
-          <div className="mt-10  shadow-sm">
+          <div className="mt-10 mr-10 shadow-sm">
             <BlockedListTable id={id} />
           </div>
         </>

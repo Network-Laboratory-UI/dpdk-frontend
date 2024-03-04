@@ -7,6 +7,7 @@ export default function Register() {
   const navigateTo = useNavigate();
 
   const [email, setEmail] = useState("");
+  const [emailError, setEmailError] = useState("");
   const [name, setName] = useState(""); // Add name state
   const [password, setPassword] = useState("");
   const toast = useRef(null);
@@ -17,6 +18,23 @@ export default function Register() {
       navigateTo("/dashboard");
     }
   }, [token]);
+
+  const validateEmail = (email) => {
+    // Regular expression for email validation
+    const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return regex.test(email);
+  };
+
+  const handleEmailChange = (e) => {
+    const newEmail = e.target.value;
+    setEmail(newEmail);
+
+    if (!validateEmail(newEmail)) {
+      setEmailError("Invalid email format");
+    } else {
+      setEmailError("");
+    }
+  };
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -102,7 +120,7 @@ export default function Register() {
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm font-medium leading-6 text-gray-900"
+                className="block text-base font-medium leading-6 text-gray-900"
               >
                 Email address
               </label>
@@ -111,18 +129,21 @@ export default function Register() {
                   id="email"
                   name="email"
                   type="text"
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={handleEmailChange}
                   autoComplete="email"
                   required
-                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-red-primary sm:text-sm sm:leading-6"
+                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-red-primary text-sm sm:leading-6"
                 />
+                {emailError && (
+                  <div className="error text-red-600 text-sm">{emailError}</div>
+                )}
               </div>
             </div>
 
             <div>
               <label
                 htmlFor="name"
-                className="block text-sm font-medium leading-6 text-gray-900"
+                className="block text-base font-medium leading-6 text-gray-900"
               >
                 Name
               </label>
@@ -143,7 +164,7 @@ export default function Register() {
               <div className="flex items-center justify-between">
                 <label
                   htmlFor="password"
-                  className="block text-sm font-medium leading-6 text-gray-900"
+                  className="block text-base font-medium leading-6 text-gray-900"
                 >
                   Password
                 </label>

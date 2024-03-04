@@ -98,7 +98,7 @@ export default function SignIn() {
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm font-medium leading-6 text-gray-900"
+                className="block text-base font-medium leading-6 text-gray-900"
               >
                 Email address
               </label>
@@ -119,7 +119,7 @@ export default function SignIn() {
               <div className="flex items-center justify-between">
                 <label
                   htmlFor="password"
-                  className="block text-sm font-medium leading-6 text-gray-900"
+                  className="block text-base font-medium leading-6 text-gray-900"
                 >
                   Password
                 </label>
