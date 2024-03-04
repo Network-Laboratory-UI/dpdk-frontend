@@ -1,11 +1,46 @@
+import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import axios from "axios";
 
 function Sidebar() {
   const location = useLocation();
   const navigateTo = useNavigate();
+  const [userData, setUserData] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get(
+          `${process.env.REACT_APP_BASE_URL}/user/profile`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setUserData(response.data.data);
+        console.log(response.data.data);
+        setLoading(false);
+      } catch (error) {
+        setError(error.message);
+        setLoading(false);
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
+
+  const handleLogout = () => {
+    // Handle logout logic here, such as clearing localStorage and navigating to the login page
+    localStorage.removeItem("token");
+    navigateTo("/");
+  };
 
   return (
-    <div className="bg-blue-primary h-screen w-64 text-white font-helvetica">
+    <div className="fixed top-0 bg-blue-primary h-screen w-2 text-white font-helvetica">
       <div className="flex items-center justify-center p-4">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -35,7 +70,9 @@ function Sidebar() {
       <ul className="py-4 w-full px-4">
         <li
           className={`flex items-center px-4 py-2 ${
-            location.pathname === "/" ? "bg-red-primary" : "hover:bg-gray-700"
+            location.pathname === "/dashboard"
+              ? "bg-red-primary"
+              : "hover:bg-gray-700"
           } rounded-lg cursor-pointer transition duration-100`}
           onClick={() => {
             navigateTo("/");
@@ -44,7 +81,7 @@ function Sidebar() {
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className={`h-8 ${
-              location.pathname === "/"
+              location.pathname === "/dashboard"
                 ? "bg-red-primary fill-white-primary"
                 : "fill-red-primary bg-white"
             }  rounded-lg p-1`}
@@ -76,86 +113,48 @@ function Sidebar() {
             Home
           </h4>
         </li>
-        <li
-          className={`flex items-center px-4 py-2 ${
-            location.pathname === "/log"
-              ? "bg-red-primary"
-              : "hover:bg-gray-700"
-          } rounded-lg cursor-pointer transition duration-100`}
-          onClick={() => {
-            navigateTo("/log");
-          }}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className={`h-8 ${
-              location.pathname === "/log"
-                ? "bg-red-primary fill-white-primary"
-                : "fill-red-primary bg-white"
-            }  rounded-lg p-1`}
-            viewBox="0 0 16 16"
-            fill="none"
-          >
-            <g clip-path="url(#clip0_1_655)">
-              <path d="M3.4258 15.0316H2.47943C2.29119 15.0316 2.11065 14.9575 1.97754 14.8257C1.84443 14.6938 1.76965 14.515 1.76965 14.3285V10.1097C1.76965 9.92326 1.84443 9.74442 1.97754 9.61256C2.11065 9.4807 2.29119 9.40662 2.47943 9.40662H3.4258C3.61405 9.40662 3.79458 9.4807 3.92769 9.61256C4.0608 9.74442 4.13558 9.92326 4.13558 10.1097V14.3285C4.13558 14.515 4.0608 14.6938 3.92769 14.8257C3.79458 14.9575 3.61405 15.0316 3.4258 15.0316Z" />
-              <path d="M10.0504 15.0308H9.10407C8.91582 15.0308 8.73529 14.9567 8.60218 14.8249C8.46907 14.693 8.39429 14.5142 8.39429 14.3277V7.29645C8.39429 7.10997 8.46907 6.93112 8.60218 6.79926C8.73529 6.6674 8.91582 6.59332 9.10407 6.59332H10.0504C10.2387 6.59332 10.4192 6.6674 10.5523 6.79926C10.6854 6.93112 10.7602 7.10997 10.7602 7.29645V14.3277C10.7602 14.5142 10.6854 14.693 10.5523 14.8249C10.4192 14.9567 10.2387 15.0308 10.0504 15.0308Z" />
-              <path d="M13.3627 15.0311H12.4163C12.2281 15.0311 12.0475 14.957 11.9144 14.8252C11.7813 14.6933 11.7065 14.5145 11.7065 14.328V4.0155C11.7065 3.82902 11.7813 3.65018 11.9144 3.51832C12.0475 3.38646 12.2281 3.31238 12.4163 3.31238H13.3627C13.5509 3.31238 13.7315 3.38646 13.8646 3.51832C13.9977 3.65018 14.0725 3.82902 14.0725 4.0155V14.328C14.0725 14.5145 13.9977 14.6933 13.8646 14.8252C13.7315 14.957 13.5509 15.0311 13.3627 15.0311Z" />
-              <path d="M6.73806 15.031H5.79169C5.60344 15.031 5.42291 14.9569 5.2898 14.8251C5.15669 14.6932 5.08191 14.5144 5.08191 14.3279V1.67163C5.08191 1.48515 5.15669 1.30631 5.2898 1.17445C5.42291 1.04258 5.60344 0.968506 5.79169 0.968506H6.73806C6.92631 0.968506 7.10684 1.04258 7.23995 1.17445C7.37306 1.30631 7.44784 1.48515 7.44784 1.67163V14.3279C7.44784 14.5144 7.37306 14.6932 7.23995 14.8251C7.10684 14.9569 6.92631 15.031 6.73806 15.031Z" />
-            </g>
-            <defs>
-              <clipPath id="clip0_1_655">
-                <rect
-                  width="15.142"
-                  height="15"
-                  fill="white"
-                  transform="translate(0.350098 0.5)"
-                />
-              </clipPath>
-            </defs>
-          </svg>
-          <h4
-            className={`ml-4 ${
-              location.pathname === "/log"
-                ? "text-white-primary"
-                : "text-blue-secondary"
-            }`}
-          >
-            Log
-          </h4>
-        </li>
-        <li
-          className={`flex items-center px-4 py-2 ${
-            location.pathname === "/settings"
-              ? "bg-red-primary"
-              : "hover:bg-gray-700"
-          } rounded-lg cursor-pointer transition duration-100`}
-          onClick={() => {
-            navigateTo("/settings");
-          }}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className={`h-8 ${
-              location.pathname === "/settings"
-                ? "bg-red-primary fill-white-primary"
-                : "fill-red-primary bg-white"
-            }  rounded-lg p-1`}
-            viewBox="0 0 16 16"
-            fill="none"
-          >
-            <path d="M14.237 4.03142C14.2029 3.96577 14.1537 3.90902 14.0933 3.8658C14.0329 3.82257 13.963 3.79409 13.8894 3.78267C13.8158 3.77124 13.7405 3.77721 13.6696 3.80007C13.5988 3.82293 13.5344 3.86205 13.4817 3.91423L11.6646 5.7154C11.5755 5.80248 11.4553 5.8513 11.33 5.8513C11.2048 5.8513 11.0846 5.80248 10.9954 5.7154L10.2099 4.93611C10.1659 4.89258 10.1311 4.8409 10.1073 4.78402C10.0835 4.72714 10.0713 4.66618 10.0713 4.60461C10.0713 4.54305 10.0835 4.48208 10.1073 4.4252C10.1311 4.36833 10.1659 4.31665 10.2099 4.27312L12.0192 2.48044C12.0735 2.42672 12.1137 2.36074 12.1365 2.28818C12.1593 2.21563 12.1639 2.13868 12.15 2.06395C12.1361 1.98923 12.1041 1.91898 12.0567 1.85924C12.0093 1.79951 11.9479 1.75209 11.8779 1.72107C10.5113 1.11579 8.80542 1.43161 7.72981 2.48923C6.81597 3.38806 6.5436 4.79255 6.98307 6.34265C7.00676 6.42531 7.0069 6.51286 6.98346 6.59559C6.96002 6.67832 6.91393 6.75302 6.85028 6.8114L1.92678 11.266C1.73497 11.4366 1.58026 11.6441 1.47208 11.8759C1.3639 12.1077 1.30452 12.3588 1.29757 12.6141C1.29061 12.8694 1.33622 13.1234 1.43161 13.3606C1.52701 13.5978 1.67019 13.8133 1.85242 13.9939C2.03466 14.1745 2.25212 14.3164 2.49155 14.4111C2.73098 14.5057 2.98735 14.551 3.24503 14.5442C3.50272 14.5374 3.7563 14.4787 3.99032 14.3716C4.22435 14.2646 4.4339 14.1114 4.60619 13.9215L9.15115 9.03327C9.20923 8.97103 9.28336 8.92567 9.36554 8.90208C9.44773 8.87849 9.53485 8.87756 9.61753 8.89939C10.063 9.0203 10.5225 9.08304 10.9844 9.08601C11.9722 9.08601 12.839 8.76931 13.4642 8.15905C14.6221 7.02907 14.7986 5.11247 14.237 4.03142ZM3.29281 13.6007C3.09803 13.6217 2.90146 13.5824 2.73022 13.488C2.55898 13.3937 2.42151 13.2491 2.33679 13.0741C2.25207 12.899 2.22427 12.7023 2.25723 12.511C2.2902 12.3196 2.38229 12.1432 2.52081 12.0059C2.65933 11.8686 2.83745 11.7773 3.03058 11.7446C3.22371 11.7119 3.42233 11.7394 3.59903 11.8232C3.77572 11.9071 3.92179 12.0432 4.01707 12.2128C4.11234 12.3824 4.15213 12.5771 4.13094 12.7701C4.10762 12.9824 4.01183 13.1805 3.85942 13.3315C3.70701 13.4825 3.50711 13.5775 3.29281 13.6007Z" />
-          </svg>
-          <h4
-            className={`ml-4 ${
-              location.pathname === "/settings"
-                ? "text-white-primary"
-                : "text-blue-secondary"
-            }`}
-          >
-            Settings
-          </h4>
-        </li>
       </ul>
+      <div className="py-4 w-full px-4 fixed inset-x-0 bottom-0">
+        <div className="flex items-center px-4 py-2 mt-auto">
+          {/* <svg
+            fill="none"
+            viewBox="0 0 50 50"
+            data-name="Layer 1"
+            className="h-8 fill-red-primary bg-white-primary rounded-lg p-1"
+            id="Layer_1"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <title />
+            <path d="M24,21A10,10,0,1,1,34,11,10,10,0,0,1,24,21ZM24,5a6,6,0,1,0,6,6A6,6,0,0,0,24,5Z" />
+            <path d="M42,47H6a2,2,0,0,1-2-2V39A16,16,0,0,1,20,23h8A16,16,0,0,1,44,39v6A2,2,0,0,1,42,47ZM8,43H40V39A12,12,0,0,0,28,27H20A12,12,0,0,0,8,39Z" />
+          </svg> */}
+          <button onClick={handleLogout}>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              className="h-8 fill-red-primary bg-white-primary rounded-lg p-1"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M15 12L2 12M2 12L5.5 9M2 12L5.5 15"
+                stroke="#1C274C"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <path
+                d="M9.00195 7C9.01406 4.82497 9.11051 3.64706 9.87889 2.87868C10.7576 2 12.1718 2 15.0002 2L16.0002 2C18.8286 2 20.2429 2 21.1215 2.87868C22.0002 3.75736 22.0002 5.17157 22.0002 8L22.0002 16C22.0002 18.8284 22.0002 20.2426 21.1215 21.1213C20.3531 21.8897 19.1752 21.9862 17 21.9983M9.00195 17C9.01406 19.175 9.11051 20.3529 9.87889 21.1213C10.5202 21.7626 11.4467 21.9359 13 21.9827"
+                stroke="#1C274C"
+                stroke-width="1.5"
+                stroke-linecap="round"
+              />
+            </svg>
+          </button>
+          <h4 className="ml-4 flex-shrink-0 w-1/6 overflow-hidden">
+            Hi, {userData.name}
+          </h4>{" "}
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,22 +1,43 @@
-import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
 import Home from "./Pages/Home";
 import Npb from "./Pages/Npb";
 import Ps from "./Pages/Ps";
-import Sidebar from "./components/Sidebar";
 
-function App() {
-  return (
-    <div className="flex flex-row min-h-full h-screen min-w-[350px]">
-    <Router>
-      <Sidebar />
-      <Routes>
-          <Route index element={<Home />} />
-          <Route path="/log" element={<Npb/>} />
-          <Route path="/settings" element={<Ps/>} />
-      </Routes>
-    </Router>
-    </div>
-  );
-}
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import Dashboard from "./Pages/Dashboard";
+import SignIn from "./Pages/SignIn";
+import Register from "./Pages/Register";
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <SignIn />,
+  },
+  {
+    path: "register",
+    element: <Register />,
+  },
+  {
+    path: "dashboard",
+    element: <Dashboard />,
+    children: [
+      {
+        index: true,
+        element: <Home />,
+      },
+      {
+        path: "npb",
+        element: <Npb />,
+      },
+      {
+        path: "ps",
+        element: <Ps />,
+      },
+    ],
+  },
+]);
+
+const App = () => {
+  return <RouterProvider router={router} />;
+};
 
 export default App;
