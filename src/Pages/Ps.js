@@ -296,52 +296,46 @@ function Ps() {
               </div>
             </div>
           </div>
-          {chartLoading ? (
-            <div className="mt-10 mr-10 shadow-sm">
-              <div className="inset-0 flex items-center justify-center">
-                <ProgressSpinner />
-              </div>
-            </div>
-          ) : (
-            <>
-              <div className="mt-10 mr-10 shadow-sm">
-                <LineChart
-                  title="Reset Client Hit"
-                  packetData={packetData.map((data) => ({
-                    time: data.time,
-                    value: data.rstClient,
-                  }))}
-                />
-              </div>
-              <div className="mt-10 mr-10 shadow-sm">
-                <LineChart
-                  title="Reset Server Hit"
-                  packetData={packetData.map((data) => ({
-                    time: data.time,
-                    value: data.rstServer,
-                  }))}
-                />
-              </div>
-              <div className="mt-10 mr-10 shadow-sm">
-                <LineChart
-                  title="TX Count"
-                  packetData={packetData.map((data) => ({
-                    time: data.time,
-                    value: data.tx_1_count,
-                  }))}
-                />
-              </div>
-              <div className="mt-10 mr-10 shadow-sm">
-                <LineChart
-                  title="RX Count"
-                  packetData={packetData.map((data) => ({
-                    time: data.time,
-                    value: data.rx_0_count,
-                  }))}
-                />
-              </div>
-            </>
-          )}
+          <div className="mt-10 mr-10 shadow-sm">
+            <LineChart
+              title="Reset Client Hit"
+              packetData={packetData.map((data) => ({
+                time: data.time,
+                value: data.rstClient,
+              }))}
+              loading={chartLoading} // pass loading state to LineChart
+            />
+          </div>
+          <div className="mt-10 mr-10 shadow-sm">
+            <LineChart
+              title="Reset Server Hit"
+              packetData={packetData.map((data) => ({
+                time: data.time,
+                value: data.rstServer,
+              }))}
+              loading={chartLoading} // pass loading state to LineChart
+            />
+          </div>
+          <div className="mt-10 mr-10 shadow-sm">
+            <LineChart
+              title="TX Count"
+              packetData={packetData.map((data) => ({
+                time: data.time,
+                value: data.tx_1_count,
+              }))}
+              loading={chartLoading} // pass loading state to LineChart
+            />
+          </div>
+          <div className="mt-10 mr-10 shadow-sm">
+            <LineChart
+              title="RX Count"
+              packetData={packetData.map((data) => ({
+                time: data.time,
+                value: data.rx_0_count,
+              }))}
+              loading={chartLoading} // pass loading state to LineChart
+            />
+          </div>
           <Paginator
             first={first}
             rows={pageSize}

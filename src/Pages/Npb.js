@@ -307,53 +307,46 @@ function Npb() {
               />
             </div>
           </div>
-          {/* Loading indicator for chart loading */}
-          {chartLoading && (
-            <div className="inset-0 flex items-center justify-center">
-              <ProgressSpinner />
-            </div>
-          )}
-          {/* Render charts once initial loading is complete */}
-          {!chartLoading && (
-            <>
-              <div className="mt-10 mr-10 shadow-sm">
-                <LineChart
-                  title="HTTP Count"
-                  packetData={packetData.map((data) => ({
-                    time: data.time,
-                    value: data.http_count,
-                  }))}
-                />
-              </div>
-              <div className="mt-10 mr-10 shadow-sm">
-                <LineChart
-                  title="HTTPS Count"
-                  packetData={packetData.map((data) => ({
-                    time: data.time,
-                    value: data.https_count,
-                  }))}
-                />
-              </div>
-              <div className="mt-10 mr-10 shadow-sm">
-                <LineChart
-                  title="TX Count"
-                  packetData={packetData.map((data) => ({
-                    time: data.time,
-                    value: data.tx_0_count,
-                  }))}
-                />
-              </div>
-              <div className="mt-10 mr-10 mb-20 shadow-sm">
-                <LineChart
-                  title="RX Count"
-                  packetData={packetData.map((data) => ({
-                    time: data.time,
-                    value: data.rx_1_count,
-                  }))}
-                />
-              </div>
-            </>
-          )}
+          <div className="mt-10 mr-10 shadow-sm">
+            <LineChart
+              title="HTTP Count"
+              packetData={packetData.map((data) => ({
+                time: data.time,
+                value: data.http_count,
+              }))}
+              loading={chartLoading} // pass loading state to LineChart
+            />
+          </div>
+          <div className="mt-10 mr-10 shadow-sm">
+            <LineChart
+              title="HTTPS Count"
+              packetData={packetData.map((data) => ({
+                time: data.time,
+                value: data.https_count,
+              }))}
+              loading={chartLoading} // pass loading state to LineChart
+            />
+          </div>
+          <div className="mt-10 mr-10 shadow-sm">
+            <LineChart
+              title="TX Count"
+              packetData={packetData.map((data) => ({
+                time: data.time,
+                value: data.tx_0_count,
+              }))}
+              loading={chartLoading} // pass loading state to LineChart
+            />
+          </div>
+          <div className="mt-10 mr-10 mb-20 shadow-sm">
+            <LineChart
+              title="RX Count"
+              packetData={packetData.map((data) => ({
+                time: data.time,
+                value: data.rx_1_count,
+              }))}
+              loading={chartLoading} // pass loading state to LineChart
+            />
+          </div>
           <Paginator
             first={first}
             rows={pageSize}

@@ -10,6 +10,7 @@ import {
   Legend,
 } from "chart.js";
 import { Line } from "react-chartjs-2";
+import SkeletonLineChart from "./SkeletonLineChart"; // Import the SkeletonLineChart component
 
 ChartJS.register(
   CategoryScale,
@@ -21,7 +22,7 @@ ChartJS.register(
   Legend
 );
 
-const LineChart = ({ title, packetData }) => {
+const LineChart = ({ title, packetData, loading }) => {
   const [chartData, setChartData] = useState({
     labels: [],
     datasets: [
@@ -91,7 +92,13 @@ const LineChart = ({ title, packetData }) => {
   return (
     <div>
       <h3>{title}</h3>
-      <Line data={chartData} options={options} />
+      {loading ? (
+        <SkeletonLineChart /> // Render skeleton loading state if loading is true
+      ) : (
+        <div className="chart-container">
+          <Line data={chartData} options={options} /> 
+        </div>
+      )}
     </div>
   );
 };
