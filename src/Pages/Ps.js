@@ -4,102 +4,150 @@ import Card from "../components/Card";
 import LineChart from "../components/LineChart";
 import axios from "axios";
 import generateConfigFileContent from "../components/GenerateConfigFileContent";
-import ProgressSpinner from "../components/ProgressSpinner"; // Import ProgressSpinner component
+import ProgressSpinner from "../components/ProgressSpinner";
 import BlockedListTable from "../components/BlockedListTable"; // Import BlockedListTable component
+import { Paginator } from "primereact/paginator"; // Import Paginator component from PrimeReact
 
 function Ps() {
   const location = useLocation();
   const navigateTo = useNavigate();
   const searchParams = new URLSearchParams(location.search);
   const id = decodeURIComponent(searchParams.get("id"));
-  const [loading, setLoading] = useState(true); // Loading state
+  const [initialLoading, setInitialLoading] = useState(true); // State for initial loading
+  const [chartLoading, setChartLoading] = useState(false); // State for chart loading
   const [policyServer, setPolicyServer] = useState({
     id: "",
     name: "",
     location: "",
   });
-  const [graphData, setGraphData] = useState([]); // For graph data
+  const [packetData, setPacketData] = useState([]);
+  const [countData, setCountData] = useState();
   const [totalPacket, setTotalPacket] = useState({
     rstClient: 0,
     rstServer: 0,
     txCount: 0,
     rxCount: 0,
   }); // For card total
+  const [first, setFirst] = useState(0);
+  const [pageSize, setPageSize] = useState(60);
+  const [currentPage, setCurrentPage] = useState(1);
   const token = localStorage.getItem("token");
   if (!token) {
     navigateTo("/");
   }
 
-  useEffect(() => {
-    let initialFetchCompleted = false;
+  const fetchInitialData = async () => {
+    try {
+      //setInitialLoading(true); // Set initial loading to true
 
-    const fetchData = async () => {
-      try {
-        if (!initialFetchCompleted) {
-          setLoading(true); // Show loading state only for initial fetch
-        }
+      // Fetch total packet data
+      const totalResponse = await axios.get(
+        `${process.env.REACT_APP_BASE_URL}/ps/ps-packet-total/${id}`
+      );
+      const totalData = totalResponse.data;
+      setTotalPacket({
+        rstClient: formatNumber(totalData.psPackets.rstClient),
+        rstServer: formatNumber(totalData.psPackets.rstServer),
+        txCount: formatNumber(totalData.psPackets.tx_1_count),
+        rxCount: formatNumber(totalData.psPackets.rx_0_count),
+      });
 
-        // Fetch graph data
-        const graphResponse = await axios.get(
-          `${process.env.REACT_APP_BASE_URL}/ps/ps-packet/${id}`
-        );
-        const graphData = graphResponse.data;
+      // Fetch packet data
+      const response = await axios.get(
+        `${process.env.REACT_APP_BASE_URL}/ps/ps-packet-page/${id}?page=${
+          first / pageSize + 1
+        }&pageSize=${pageSize}`
+      );
 
-        // Check if data is an array and not empty
-        if (Array.isArray(graphData) && graphData.length > 0) {
-          setGraphData(graphData);
-        } else {
-          // If data is empty, update graphData with an error message
-          setGraphData([{ message: "No Policy Server Packets found" }]);
-        }
-
-        // Fetch card total data
-        const totalResponse = await axios.get(
-          `${process.env.REACT_APP_BASE_URL}/ps/ps-packet-total/${id}`
-        );
-        const totalData = totalResponse.data;
-
-        // Update totalPacket
-        setTotalPacket({
-          rstClient: formatNumber(totalData.psPacket.rstClient),
-          rstServer: formatNumber(totalData.psPacket.rstServer),
-          txCount: formatNumber(totalData.psPacket.tx_1_count),
-          rxCount: formatNumber(totalData.psPacket.rx_0_count),
+      const countResponse = response.data.count;
+      setCountData(countResponse);
+      // Update packet data for LineChart
+      const graphData = response.data.psPackets;
+      if (Array.isArray(graphData) && graphData.length > 0) {
+        const localData = graphData.map((packet) => {
+          const utcDate = new Date(packet.time);
+          const localDateString = utcDate.toLocaleString();
+          return {
+            ...packet,
+            time: localDateString,
+          };
         });
-
-        // Fetch Policy Server info
-        const policyServerResponse = await axios.get(
-          `${process.env.REACT_APP_BASE_URL}/ps/psid/${id}`
-        );
-        const policyServerData = policyServerResponse.data;
-
-        console.log("Policy Server Data: ", policyServerData);
-
-        setPolicyServer({
-          id: policyServerData.id,
-          name: policyServerData.name,
-          location: policyServerData.location,
-        });
-
-        if (!initialFetchCompleted) {
-          setLoading(false); // Hide loading state after initial fetch is complete
-          initialFetchCompleted = true; // Set initial fetch completed flag
-        }
-      } catch (error) {
-        console.error("Error fetching data: ", error);
-        setLoading(false); // Hide loading state if there's an error
+        setPacketData(localData);
+      } else {
+        setPacketData([{ message: "No Ps Packets found" }]);
       }
-    };
 
-    // Initial fetch
-    fetchData();
+      // Fetch Policy Server info
+      const policyServerResponse = await axios.get(
+        `${process.env.REACT_APP_BASE_URL}/ps/psid/${id}`
+      );
+      const policyServerData = policyServerResponse.data;
 
-    // Set interval to fetch data every 30 seconds
-    const intervalId = setInterval(fetchData, 5000);
+      setPolicyServer({
+        id: policyServerData.id,
+        name: policyServerData.name,
+        location: policyServerData.location,
+      });
 
-    // Cleanup function to clear interval
-    return () => clearInterval(intervalId);
-  }, [id]);
+      setInitialLoading(false); // Set initial loading to false after data is fetched
+    } catch (error) {
+      console.error("Error fetching initial data: ", error);
+      setInitialLoading(false); // Set initial loading to false on error
+    }
+  };
+
+  const fetchUpdatedData = async () => {
+    try {
+      // Fetch total packet data
+      const totalResponse = await axios.get(
+        `${process.env.REACT_APP_BASE_URL}/ps/ps-packet-total/${id}`
+      );
+      const totalData = totalResponse.data;
+      setTotalPacket({
+        rstClient: formatNumber(totalData.psPackets.rstClient),
+        rstServer: formatNumber(totalData.psPackets.rstServer),
+        txCount: formatNumber(totalData.psPackets.tx_1_count),
+        rxCount: formatNumber(totalData.psPackets.rx_0_count),
+      });
+
+      // Fetch packet data
+      const response = await axios.get(
+        `${process.env.REACT_APP_BASE_URL}/ps/ps-packet-page/${id}?page=${
+          first / pageSize + 1
+        }&pageSize=${pageSize}`
+      );
+
+      const countResponse = response.data.count;
+      setCountData(countResponse);
+      // Update packet data for LineChart
+      const graphData = response.data.psPackets;
+      if (Array.isArray(graphData) && graphData.length > 0) {
+        const localData = graphData.map((packet) => {
+          const utcDate = new Date(packet.time);
+          const localDateString = utcDate.toLocaleString();
+          return {
+            ...packet,
+            time: localDateString,
+          };
+        });
+        setPacketData(localData);
+      } else {
+        setPacketData([{ message: "No Ps Packets found" }]);
+      }
+    } catch (error) {
+      console.error("Error fetching initial data: ", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchInitialData(); // Fetch initial data
+
+    const intervalId = setInterval(() => {
+      fetchUpdatedData(); // Fetch updated data every 5 seconds
+    }, 1000000);
+
+    return () => clearInterval(intervalId); // Cleanup interval on unmount
+  }, [id, first]); // Trigger fetchInitialData only when id changes
 
   // Function to format numbers
   const formatNumber = (num) => {
@@ -122,6 +170,22 @@ function Ps() {
       return (num / 1e3).toFixed(2).replace(/\.0$/, "") + " K";
     }
     return num;
+  };
+
+  // Function to handle pagination change
+  const onPageChange = async (event) => {
+    setFirst(event.first);
+    setChartLoading(true);
+
+    try {
+      // Fetch data for the new page
+      await fetchUpdatedData();
+    } catch (error) {
+      console.error("Error fetching updated data: ", error);
+    } finally {
+      // Set chart loading to false after data is fetched or on error
+      setChartLoading(false);
+    }
   };
 
   const handleDownloadConfig = () => {
@@ -154,13 +218,12 @@ function Ps() {
 
   return (
     <div className="relative ml-3">
-      {/* Loading spinner in the center */}
-      {loading && (
+      {initialLoading && (
         <div className="fixed inset-0 flex items-center justify-center">
           <ProgressSpinner />
         </div>
       )}
-      {!loading && (
+      {!initialLoading && (
         <>
           <div className="absolute top-0 right-0 mt-10 mr-10 flex">
             <button
@@ -190,85 +253,102 @@ function Ps() {
             </p>
             <div className="w-4 h-4 text-gray-700 text-2xl font-normal font-['Helvetica'] mt-3 ">
               Policy Server
-            </div> 
+            </div>
             <div className="w-4 h-4 text-black-700 text-5xl font-bold font-['Helvetica'] mt-3">
               {policyServer.name}
             </div>
             <p className="text-gray-400 w-4 font-['Helvetica'] text-sm font-bold mt-5">
-            ID: {policyServer.id}
+              ID: {policyServer.id}
             </p>
             <div className="text-gray-700 text-base font-normal font-['Helvetica'] italic">
               Location: {policyServer.location}
             </div>
           </header>
-
           <div className="flex flex-row mr-10">
-            <div className="mr-2">
-              <Card
-                hitType="Reset Client Hit"
-                number={totalPacket.rstClient}
-                packet="Packet"
-              />
+            <div className="flex flex-row mr-10">
+              <div className="mr-2">
+                <Card
+                  hitType="Reset Client Hit"
+                  number={totalPacket.rstClient}
+                  packet="Packet"
+                />
+              </div>
+              <div className="mr-2">
+                <Card
+                  hitType="Reset Server Hit"
+                  number={totalPacket.rstServer}
+                  packet="Packet"
+                />
+              </div>
+              <div className="mr-2">
+                <Card
+                  hitType="TX Count"
+                  number={totalPacket.txCount}
+                  packet="Packet"
+                />
+              </div>
+              <div className="mr-2">
+                <Card
+                  hitType="RX Count"
+                  number={totalPacket.rxCount}
+                  packet="Packet"
+                />
+              </div>
             </div>
-            <div className="mr-2">
-              <Card
-                hitType="Reset Server Hit"
-                number={totalPacket.rstServer}
-                packet="Packet"
-              />
+          </div>
+          {chartLoading ? (
+            <div className="mt-10 mr-10 shadow-sm">
+              <div className="inset-0 flex items-center justify-center">
+                <ProgressSpinner />
+              </div>
             </div>
-            <div className="mr-2">
-              <Card
-                hitType="TX Count"
-                number={totalPacket.txCount}
-                packet="Packet"
-              />
-            </div>
-            <div className="mr-2">
-              <Card
-                hitType="RX Count"
-                number={totalPacket.rxCount}
-                packet="Packet"
-              />
-            </div>
-          </div>
-          <div className="mt-10 mr-10 shadow-sm">
-            <LineChart
-              title="Reset Client Hit"
-              packetData={graphData.map((data) => ({
-                time: data.time,
-                value: data.rstClient,
-              }))}
-            />
-          </div>
-          <div className="mt-10 mr-10 shadow-sm">
-            <LineChart
-              title="Reset Server Hit"
-              packetData={graphData.map((data) => ({
-                time: data.time,
-                value: data.rstServer,
-              }))}
-            />
-          </div>
-          <div className="mt-10 mr-10 shadow-sm">
-            <LineChart
-              title="TX Count"
-              packetData={graphData.map((data) => ({
-                time: data.time,
-                value: data.tx_1_count,
-              }))}
-            />
-          </div>
-          <div className="mt-10 mr-10 shadow-sm">
-            <LineChart
-              title="RX Count"
-              packetData={graphData.map((data) => ({
-                time: data.time,
-                value: data.rx_0_count,
-              }))}
-            />
-          </div>
-          {/* Render BlockedListTable component and pass the id */}
+          ) : (
+            <>
+              <div className="mt-10 mr-10 shadow-sm">
+                <LineChart
+                  title="Reset Client Hit"
+                  packetData={packetData.map((data) => ({
+                    time: data.time,
+                    value: data.rstClient,
+                  }))}
+                />
+              </div>
+              <div className="mt-10 mr-10 shadow-sm">
+                <LineChart
+                  title="Reset Server Hit"
+                  packetData={packetData.map((data) => ({
+                    time: data.time,
+                    value: data.rstServer,
+                  }))}
+                />
+              </div>
+              <div className="mt-10 mr-10 shadow-sm">
+                <LineChart
+                  title="TX Count"
+                  packetData={packetData.map((data) => ({
+                    time: data.time,
+                    value: data.tx_1_count,
+                  }))}
+                />
+              </div>
+              <div className="mt-10 mr-10 shadow-sm">
+                <LineChart
+                  title="RX Count"
+                  packetData={packetData.map((data) => ({
+                    time: data.time,
+                    value: data.rx_0_count,
+                  }))}
+                />
+              </div>
+            </>
+          )}
+          <Paginator
+            first={first}
+            rows={pageSize}
+            totalRecords={countData} // Assuming packetData is the total count
+            onPageChange={onPageChange}
+            template={{ layout: "PrevPageLink CurrentPageReport NextPageLink" }}
+          />
           <div className="mt-10 mr-10 shadow-sm">
             <BlockedListTable id={id} />
           </div>

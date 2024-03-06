@@ -28,9 +28,9 @@ function Npb() {
     rxCount: 0,
   });
   const [first, setFirst] = useState(0);
-  const [pageSize, setPageSize] = useState(30);
+  const [isFirstCall, setIsFirstCall] = useState(true);
+  const [pageSize, setPageSize] = useState(60);
   const [currentPage, setCurrentPage] = useState(1);
-
   const token = localStorage.getItem("token");
   if (!token) {
     navigateTo("/");
@@ -38,65 +38,8 @@ function Npb() {
 
   const fetchInitialData = async () => {
     try {
-      setInitialLoading(true); // Set initial loading to true
+      //setInitialLoading(true); // Set initial loading to true
 
-      // Fetch total packet data
-      const totalResponse = await axios.get(
-        `${process.env.REACT_APP_BASE_URL}/npb/npb-packet-total/${id}`
-      );
-      const totalData = totalResponse.data;
-      setTotalPacket({
-        httpCount: formatNumber(totalData.npbPackets.http_count),
-        httpsCount: formatNumber(totalData.npbPackets.https_count),
-        txCount: formatNumber(totalData.npbPackets.tx_0_count),
-        rxCount: formatNumber(totalData.npbPackets.rx_1_count),
-      });
-
-      // Fetch packet data
-      const response = await axios.get(
-        `${process.env.REACT_APP_BASE_URL}/npb/npb-packet-page/${id}?page=${currentPage}&pageSize=${pageSize}`
-      );
-
-      const countResponse = response.data.count;
-      setCountData(countResponse);
-      // Update packet data for LineChart
-      const graphData = response.data.npbPackets;
-      if (Array.isArray(graphData) && graphData.length > 0) {
-        const localData = graphData.map((packet) => {
-          const utcDate = new Date(packet.time);
-          const localDateString = utcDate.toLocaleString();
-          return {
-            ...packet,
-            time: localDateString,
-          };
-        });
-        console.log("localData", localData);
-        setPacketData(localData);
-      } else {
-        setPacketData([{ message: "No Npb Packets found" }]);
-      }
-
-      // Fetch Packet Broker info
-      const packetBrokerResponse = await axios.get(
-        `${process.env.REACT_APP_BASE_URL}/npb/npbid/${id}`
-      );
-      const packetBrokerData = packetBrokerResponse.data;
-
-      setPacketBroker({
-        id: packetBrokerData.id,
-        name: packetBrokerData.name,
-        location: packetBrokerData.location,
-      });
-
-      setInitialLoading(false); // Set initial loading to false after data is fetched
-    } catch (error) {
-      console.error("Error fetching initial data: ", error);
-      setInitialLoading(false); // Set initial loading to false on error
-    }
-  };
-
-  const fetchUpdatedData = async () => {
-    try {
       // Fetch total packet data
       const totalResponse = await axios.get(
         `${process.env.REACT_APP_BASE_URL}/npb/npb-packet-total/${id}`
@@ -129,7 +72,6 @@ function Npb() {
             time: localDateString,
           };
         });
-        console.log("localData", localData);
         setPacketData(localData);
       } else {
         setPacketData([{ message: "No Npb Packets found" }]);
@@ -146,6 +88,59 @@ function Npb() {
         name: packetBrokerData.name,
         location: packetBrokerData.location,
       });
+
+      setInitialLoading(false); // Set initial loading to false after data is fetched
+    } catch (error) {
+      console.error("Error fetching initial data: ", error);
+      setInitialLoading(false); // Set initial loading to false on error
+    }
+  };
+
+  const fetchUpdatedData = async () => {
+    try {
+      // Increment 'first' only on the first call
+      if (isFirstCall) {
+        setFirst(first + pageSize);
+        setIsFirstCall(false);
+      }
+
+      // Fetch total packet data
+      const totalResponse = await axios.get(
+        `${process.env.REACT_APP_BASE_URL}/npb/npb-packet-total/${id}`
+      );
+      const totalData = totalResponse.data;
+      setTotalPacket({
+        httpCount: formatNumber(totalData.npbPackets.http_count),
+        httpsCount: formatNumber(totalData.npbPackets.https_count),
+        txCount: formatNumber(totalData.npbPackets.tx_0_count),
+        rxCount: formatNumber(totalData.npbPackets.rx_1_count),
+      });
+
+      // Fetch packet data
+      const response = await axios.get(
+        `${process.env.REACT_APP_BASE_URL}/npb/npb-packet-page/${id}?page=${
+          first / pageSize + 1
+        }&pageSize=${pageSize}`
+      );
+
+      const countResponse = response.data.count;
+      setCountData(countResponse);
+      // Update packet data for LineChart
+      const graphData = response.data.npbPackets;
+      if (Array.isArray(graphData) && graphData.length > 0) {
+        const localData = graphData.map((packet) => {
+          const utcDate = new Date(packet.time);
+          const localDateString = utcDate.toLocaleString();
+          return {
+            ...packet,
+            time: localDateString,
+          };
+        });
+        // console.log("localData", localData);
+        setPacketData(localData);
+      } else {
+        setPacketData([{ message: "No Npb Packets found" }]);
+      }
     } catch (error) {
       console.error("Error fetching updated data: ", error);
     }
@@ -155,11 +150,11 @@ function Npb() {
     fetchInitialData(); // Fetch initial data
 
     const intervalId = setInterval(() => {
-      fetchUpdatedData(); // Fetch updated data every 30 seconds
-    }, 5000);
+      fetchUpdatedData(); // Fetch updated data every 1000 seconds
+    }, 1000000);
 
     return () => clearInterval(intervalId); // Cleanup interval on unmount
-  }, [id]); // Trigger fetchInitialData only when id changes
+  }, [id, first]); // Trigger fetchInitialData only when id changes
 
   // Assuming rest of your component code remains the same
 
