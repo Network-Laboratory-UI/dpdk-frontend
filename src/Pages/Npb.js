@@ -156,7 +156,7 @@ function Npb() {
 
     const intervalId = setInterval(() => {
       fetchUpdatedData(); // Fetch updated data every 30 seconds
-    }, 3000000);
+    }, 5000);
 
     return () => clearInterval(intervalId); // Cleanup interval on unmount
   }, [id]); // Trigger fetchInitialData only when id changes
