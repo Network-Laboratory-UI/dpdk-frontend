@@ -298,7 +298,7 @@ function Ps() {
           </div>
           <div className="mt-10 mr-10 shadow-sm">
             <LineChart
-              title="Reset Client Hit"
+              title={chartLoading ? "" : "Reset Client Hit"}
               packetData={packetData.map((data) => ({
                 time: data.time,
                 value: data.rstClient,
@@ -308,7 +308,7 @@ function Ps() {
           </div>
           <div className="mt-10 mr-10 shadow-sm">
             <LineChart
-              title="Reset Server Hit"
+              title={chartLoading ? "" : "Reset Server Hit"}
               packetData={packetData.map((data) => ({
                 time: data.time,
                 value: data.rstServer,
@@ -318,7 +318,7 @@ function Ps() {
           </div>
           <div className="mt-10 mr-10 shadow-sm">
             <LineChart
-              title="TX Count"
+              title={chartLoading ? "" : "TX Count"}
               packetData={packetData.map((data) => ({
                 time: data.time,
                 value: data.tx_1_count,
@@ -328,7 +328,7 @@ function Ps() {
           </div>
           <div className="mt-10 mr-10 shadow-sm">
             <LineChart
-              title="RX Count"
+              title={chartLoading ? "" : "RX Count"}
               packetData={packetData.map((data) => ({
                 time: data.time,
                 value: data.rx_0_count,
