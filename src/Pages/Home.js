@@ -6,6 +6,9 @@ import PolicyServerCard from "../components/PSCard";
 import AddNewDevice from "../components/AddNewDevice";
 import ProgressSpinner from "../components/ProgressSpinner"; // Import ProgressSpinner component
 
+let cachedNpbCards = null;
+let cachedPolicyServerCards = null;
+
 const Home = () => {
   const navigateTo = useNavigate();
   const location = useLocation();
@@ -31,33 +34,41 @@ const Home = () => {
   }, [location.state]);
 
   useEffect(() => {
-    const intervalId = setInterval(fetchData, 5000); // Fetch data every 5 seconds
+    const intervalId = setInterval(updateData, 10000); // Fetch data every 10 seconds
     return () => clearInterval(intervalId); // Cleanup interval on unmount
   }, []); // Empty dependency array ensures useEffect runs only once on component mount
 
   const fetchData = () => {
-    axios
-      .get(`${process.env.REACT_APP_BASE_URL}/npb/npbs`)
-      .then((response) => {
-        const data = response.data;
-        setNpbCards(data);
-      })
-      .catch((error) => {
-        console.error("Error fetching NPB data: ", error);
-      });
+    if (cachedNpbCards && cachedPolicyServerCards) {
+      setNpbCards(cachedNpbCards);
+      setPolicyServerCards(cachedPolicyServerCards);
+      setLoading(false);
+    } else {
+      axios
+        .get(`${process.env.REACT_APP_BASE_URL}/npb/npbs`)
+        .then((response) => {
+          const data = response.data;
+          setNpbCards(data);
+          cachedNpbCards = data;
+        })
+        .catch((error) => {
+          console.error("Error fetching NPB data: ", error);
+        });
 
-    axios
-      .get(`${process.env.REACT_APP_BASE_URL}/ps/pss`)
-      .then((response) => {
-        const data = response.data;
-        setPolicyServerCards(data);
-      })
-      .catch((error) => {
-        console.error("Error fetching Policy Server data: ", error);
-      })
-      .finally(() => {
-        setLoading(false); // Set loading to false after data fetch completes
-      });
+      axios
+        .get(`${process.env.REACT_APP_BASE_URL}/ps/pss`)
+        .then((response) => {
+          const data = response.data;
+          setPolicyServerCards(data);
+          cachedPolicyServerCards = data;
+        })
+        .catch((error) => {
+          console.error("Error fetching Policy Server data: ", error);
+        })
+        .finally(() => {
+          setLoading(false); // Set loading to false after data fetch completes
+        });
+    }
   };
 
   const updateData = () => {
