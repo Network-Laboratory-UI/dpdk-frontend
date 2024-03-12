@@ -10,6 +10,7 @@ import {
   Legend,
 } from "chart.js";
 import { Line } from "react-chartjs-2";
+import SkeletonLineChart from "./SkeletonLineChart"; // Import the SkeletonLineChart component
 
 ChartJS.register(
   CategoryScale,
@@ -21,7 +22,7 @@ ChartJS.register(
   Legend
 );
 
-const LineChart = ({ title, packetData }) => {
+const LineChart = ({ title, packetData, loading }) => {
   const [chartData, setChartData] = useState({
     labels: [],
     datasets: [
@@ -31,6 +32,7 @@ const LineChart = ({ title, packetData }) => {
         borderColor: "rgb(255, 99, 132)",
         backgroundColor: "rgba(255, 99, 132, 0.5)",
         cubicInterpolationMode: "monotone", // Rounded lines
+        fill: true, // This enables the fill below the line
       },
     ],
   });
@@ -48,7 +50,7 @@ const LineChart = ({ title, packetData }) => {
         labels: timeLabels,
         datasets: [
           {
-            ...prevData.datasets[0],
+            ...prevData.datasets[0], // Spread the existing properties
             data: httpValues,
           },
         ],
@@ -72,6 +74,24 @@ const LineChart = ({ title, packetData }) => {
           family: "Helvetica",
         },
       },
+      tooltip: {
+        intersect: false,
+        backgroundColor: "rgba(0, 0, 0, 0.8)", // Change the background color
+        titleColor: "white", // Change the title color
+        titleFont: { size: 14 }, // Change the title font size
+        bodyColor: "white", // Change the body color
+        bodyFont: { size: 10 }, // Change the body font size
+        borderColor: "white", // Change the border color
+        borderWidth: 1, // Change the border width
+        callbacks: {
+          title: function (context) {
+            return context[0].label; // Customize the title
+          },
+          label: function (context) {
+            return context.dataset.label + ": " + context.parsed.y; // Customize the label
+          },
+        },
+      },
     },
     scales: {
       x: {
@@ -91,7 +111,13 @@ const LineChart = ({ title, packetData }) => {
   return (
     <div>
       <h3>{title}</h3>
-      <Line data={chartData} options={options} />
+      {loading ? (
+        <SkeletonLineChart /> // Render skeleton loading state if loading is true
+      ) : (
+        <div className="chart-container">
+          <Line data={chartData} options={options} />
+        </div>
+      )}
     </div>
   );
 };
