@@ -24,7 +24,8 @@ function Npb() {
   const [totalPacket, setTotalPacket] = useState({
     httpCount: 0,
     httpsCount: 0,
-    txCount: 0,
+    txHttpCount: 0,
+    txTLSCount: 0,
     rxCount: 0,
   });
   const [first, setFirst] = useState(0);
@@ -48,8 +49,9 @@ function Npb() {
       setTotalPacket({
         httpCount: formatNumber(totalData.npbPackets.http_count),
         httpsCount: formatNumber(totalData.npbPackets.https_count),
-        txCount: formatNumber(totalData.npbPackets.tx_0_count),
-        rxCount: formatNumber(totalData.npbPackets.rx_1_count),
+        txHttpCount: formatNumber(totalData.npbPackets.tx_o_http_count),
+        txTlsCount: formatNumber(totalData.npbPackets.tx_o_tls_count),
+        rxCount: formatNumber(totalData.npbPackets.rx_i_count),
       });
 
       // Fetch packet data
@@ -58,6 +60,8 @@ function Npb() {
           first / pageSize + 1
         }&pageSize=${pageSize}`
       );
+
+      console.log("response", response);
 
       const countResponse = response.data.count;
       setCountData(countResponse);
@@ -122,6 +126,8 @@ function Npb() {
           first / pageSize + 1
         }&pageSize=${pageSize}`
       );
+      
+      console.log("response", response);
 
       const countResponse = response.data.count;
       setCountData(countResponse);
@@ -294,8 +300,15 @@ function Npb() {
             </div>
             <div className="mr-2">
               <Card
-                hitType="TX Count"
-                number={totalPacket.txCount}
+                hitType="TX HTTP Count"
+                number={totalPacket.txHttpCount}
+                packet="Packet"
+              />
+            </div>
+            <div className="mr-2">
+              <Card
+                hitType="TX TLS Count"
+                number={totalPacket.txTlsCount}
                 packet="Packet"
               />
             </div>
@@ -329,10 +342,20 @@ function Npb() {
         </div>
         <div className="mt-10 mr-10 shadow-sm">
             <LineChart
-                title={chartLoading ? "" : "TX Count"}
+                title={chartLoading ? "" : "TX HTTP Count"}
                 packetData={packetData.map((data) => ({
                     time: data.time,
-                    value: data.tx_0_count,
+                    value: data.tx_o_http_count,
+                }))}
+                loading={chartLoading}
+            />
+        </div>
+        <div className="mt-10 mr-10 shadow-sm">
+            <LineChart
+                title={chartLoading ? "" : "TX TLS Count"}
+                packetData={packetData.map((data) => ({
+                    time: data.time,
+                    value: data.tx_o_tls_count,
                 }))}
                 loading={chartLoading}
             />
@@ -342,7 +365,7 @@ function Npb() {
                 title={chartLoading ? "" : "RX Count"}
                 packetData={packetData.map((data) => ({
                     time: data.time,
-                    value: data.rx_1_count,
+                    value: data.rx_i_count,
                 }))}
                 loading={chartLoading}
             />
