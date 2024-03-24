@@ -48,8 +48,9 @@ function Ps() {
       setTotalPacket({
         rstClient: formatNumber(totalData.psPackets.rstClient),
         rstServer: formatNumber(totalData.psPackets.rstServer),
-        txCount: formatNumber(totalData.psPackets.tx_1_count),
-        rxCount: formatNumber(totalData.psPackets.rx_0_count),
+        txCount: formatNumber(totalData.psPackets.tx_o_count),
+        rxHTTPCount: formatNumber(totalData.psPackets.rx_i_http_count),
+        rxTLSCount: formatNumber(totalData.psPackets.rx_i_tls_count),
       });
 
       // Fetch packet data
@@ -106,8 +107,9 @@ function Ps() {
       setTotalPacket({
         rstClient: formatNumber(totalData.psPackets.rstClient),
         rstServer: formatNumber(totalData.psPackets.rstServer),
-        txCount: formatNumber(totalData.psPackets.tx_1_count),
-        rxCount: formatNumber(totalData.psPackets.rx_0_count),
+        txCount: formatNumber(totalData.psPackets.tx_o_count),
+        rxHTTPCount: formatNumber(totalData.psPackets.rx_i_http_count),
+        rxTLSCount: formatNumber(totalData.psPackets.rx_i_tls_count),
       });
 
       // Fetch packet data
@@ -289,8 +291,15 @@ function Ps() {
               </div>
               <div className="mr-2">
                 <Card
-                  hitType="RX Count"
-                  number={totalPacket.rxCount}
+                  hitType="RX HTTP Count"
+                  number={totalPacket.rxHTTPCount}
+                  packet="Packet"
+                />
+              </div>
+              <div className="mr-2">
+                <Card
+                  hitType="RX TLS Count"
+                  number={totalPacket.rxTLSCount}
                   packet="Packet"
                 />
               </div>
@@ -321,17 +330,27 @@ function Ps() {
               title={chartLoading ? "" : "TX Count"}
               packetData={packetData.map((data) => ({
                 time: data.time,
-                value: data.tx_1_count,
+                value: data.tx_o_count,
               }))}
               loading={chartLoading} // pass loading state to LineChart
             />
           </div>
           <div className="mt-10 mr-10 shadow-sm">
             <LineChart
-              title={chartLoading ? "" : "RX Count"}
+              title={chartLoading ? "" : "RX HTTP Count"}
               packetData={packetData.map((data) => ({
                 time: data.time,
-                value: data.rx_0_count,
+                value: data.rx_i_http_count,
+              }))}
+              loading={chartLoading} // pass loading state to LineChart
+            />
+          </div>
+          <div className="mt-10 mr-10 shadow-sm">
+            <LineChart
+              title={chartLoading ? "" : "RX TLS Count"}
+              packetData={packetData.map((data) => ({
+                time: data.time,
+                value: data.rx_i_tls_count,
               }))}
               loading={chartLoading} // pass loading state to LineChart
             />
