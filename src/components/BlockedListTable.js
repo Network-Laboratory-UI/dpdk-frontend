@@ -89,9 +89,7 @@ const BlockedListTable = ({ id }) => {
 
     if (
       blockedItem.name.trim() &&
-      blockedItem.domain.trim() &&
-      blockedItem.ip_add.trim()
-    ) {
+      blockedItem.domain.trim()) {
       try {
         const response = await axios.post(
           `${process.env.REACT_APP_BASE_URL}/ps/blocked-list`,
@@ -429,7 +427,6 @@ const BlockedListTable = ({ id }) => {
           <Column selectionMode="multiple" exportable={false}></Column>
           <Column field="name" header="Name" sortable></Column>
           <Column field="domain" header="Domain" sortable></Column>
-          <Column field="ip_add" header="IP Address" sortable></Column>
           <Column field="hit_count" header="Hit Count" sortable></Column>
           <Column
             body={actionBodyTemplate}
@@ -468,18 +465,6 @@ const BlockedListTable = ({ id }) => {
             value={blockedItem.domain}
             onChange={(e) => onInputChange(e, "domain")}
             className="p-inputtext-custom w-full p-2 border border-gray-300 rounded-xl mt-1"
-            // Add Tailwind classes for styling
-          />
-        </div>
-        <div className="p-field">
-          <label htmlFor="ip_add" className="font-['Helvetica']">
-            IP Address
-          </label>
-          <InputText
-            id="ip_add"
-            value={blockedItem.ip_add}
-            onChange={(e) => onInputChange(e, "ip_add")}
-            className="p-inputtext-custom w-full p-2 border border-gray-300 rounded-xl"
             // Add Tailwind classes for styling
           />
         </div>
@@ -548,17 +533,6 @@ const BlockedListTable = ({ id }) => {
             value={updateBlockedItem.domain}
             onChange={(e) => onInputChangeUpdate(e, "domain")}
             className="p-inputtext-custom w-full p-2 border border-gray-300 rounded-xl mt-1"
-          />
-        </div>
-        <div className="p-field">
-          <label htmlFor="ip_add" className="font-['Helvetica']">
-            IP Address
-          </label>
-          <InputText
-            id="ip_add"
-            value={updateBlockedItem.ip_add}
-            onChange={(e) => onInputChangeUpdate(e, "ip_add")}
-            className="p-inputtext-custom w-full p-2 border border-gray-300 rounded-xl"
           />
         </div>
       </Dialog>

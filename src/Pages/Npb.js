@@ -39,6 +39,17 @@ function Npb() {
 
   const fetchInitialData = async () => {
     try {
+      // Fetch Packet Broker info
+      const packetBrokerResponse = await axios.get(
+        `${process.env.REACT_APP_BASE_URL}/npb/npbid/${id}`
+      );
+      const packetBrokerData = packetBrokerResponse.data;
+
+      setPacketBroker({
+        id: packetBrokerData.id,
+        name: packetBrokerData.name,
+        location: packetBrokerData.location,
+      });
       //setInitialLoading(true); // Set initial loading to true
 
       // Fetch total packet data
@@ -81,18 +92,6 @@ function Npb() {
         setPacketData([{ message: "No Npb Packets found" }]);
       }
 
-      // Fetch Packet Broker info
-      const packetBrokerResponse = await axios.get(
-        `${process.env.REACT_APP_BASE_URL}/npb/npbid/${id}`
-      );
-      const packetBrokerData = packetBrokerResponse.data;
-
-      setPacketBroker({
-        id: packetBrokerData.id,
-        name: packetBrokerData.name,
-        location: packetBrokerData.location,
-      });
-
       setInitialLoading(false); // Set initial loading to false after data is fetched
     } catch (error) {
       console.error("Error fetching initial data: ", error);
@@ -126,7 +125,7 @@ function Npb() {
           first / pageSize + 1
         }&pageSize=${pageSize}`
       );
-      
+
       console.log("response", response);
 
       const countResponse = response.data.count;
@@ -270,7 +269,7 @@ function Npb() {
             <p className="text-gray-700 font-['Helvetica'] text-lg font-bold ">
               Status
             </p>
-            <div className="w-4 h-4 text-gray-700 text-2xl font-normal font-['Helvetica'] mt-3 ">
+            <div className="w-4 h-4 text-red-primary text-2xl font-normal font-['Helvetica'] mt-3 ">
               Packet Broker
             </div>
             <div className="w-4 h-4 text-black-700 text-5xl font-bold font-['Helvetica'] mt-3">
@@ -320,56 +319,56 @@ function Npb() {
               />
             </div>
           </div>
-        <div className="mt-10 mr-10 shadow-sm">
+          <div className="mt-10 mr-10 shadow-sm">
             <LineChart
-                title={chartLoading ? "" : "HTTP Count"}
-                packetData={packetData.map((data) => ({
-                    time: data.time,
-                    value: data.http_count,
-                }))}
-                loading={chartLoading}
+              title={chartLoading ? "" : "HTTP Count"}
+              packetData={packetData.map((data) => ({
+                time: data.time,
+                value: data.http_count,
+              }))}
+              loading={chartLoading}
             />
-        </div>
-        <div className="mt-10 mr-10 shadow-sm">
+          </div>
+          <div className="mt-10 mr-10 shadow-sm">
             <LineChart
-                title={chartLoading ? "" : "HTTPS Count"}
-                packetData={packetData.map((data) => ({
-                    time: data.time,
-                    value: data.https_count,
-                }))}
-                loading={chartLoading}
+              title={chartLoading ? "" : "HTTPS Count"}
+              packetData={packetData.map((data) => ({
+                time: data.time,
+                value: data.https_count,
+              }))}
+              loading={chartLoading}
             />
-        </div>
-        <div className="mt-10 mr-10 shadow-sm">
+          </div>
+          <div className="mt-10 mr-10 shadow-sm">
             <LineChart
-                title={chartLoading ? "" : "TX HTTP Count"}
-                packetData={packetData.map((data) => ({
-                    time: data.time,
-                    value: data.tx_o_http_count,
-                }))}
-                loading={chartLoading}
+              title={chartLoading ? "" : "TX HTTP Count"}
+              packetData={packetData.map((data) => ({
+                time: data.time,
+                value: data.tx_o_http_count,
+              }))}
+              loading={chartLoading}
             />
-        </div>
-        <div className="mt-10 mr-10 shadow-sm">
+          </div>
+          <div className="mt-10 mr-10 shadow-sm">
             <LineChart
-                title={chartLoading ? "" : "TX TLS Count"}
-                packetData={packetData.map((data) => ({
-                    time: data.time,
-                    value: data.tx_o_tls_count,
-                }))}
-                loading={chartLoading}
+              title={chartLoading ? "" : "TX TLS Count"}
+              packetData={packetData.map((data) => ({
+                time: data.time,
+                value: data.tx_o_tls_count,
+              }))}
+              loading={chartLoading}
             />
-        </div>
-        <div className="mt-10 mr-10 mb-20 shadow-sm">
+          </div>
+          <div className="mt-10 mr-10 mb-20 shadow-sm">
             <LineChart
-                title={chartLoading ? "" : "RX Count"}
-                packetData={packetData.map((data) => ({
-                    time: data.time,
-                    value: data.rx_i_count,
-                }))}
-                loading={chartLoading}
+              title={chartLoading ? "" : "RX Count"}
+              packetData={packetData.map((data) => ({
+                time: data.time,
+                value: data.rx_i_count,
+              }))}
+              loading={chartLoading}
             />
-        </div>
+          </div>
           <Paginator
             first={first}
             rows={pageSize}

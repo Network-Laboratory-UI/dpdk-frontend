@@ -7,6 +7,7 @@ import generateConfigFileContent from "../components/GenerateConfigFileContent";
 import ProgressSpinner from "../components/ProgressSpinner";
 import BlockedListTable from "../components/BlockedListTable"; // Import BlockedListTable component
 import { Paginator } from "primereact/paginator"; // Import Paginator component from PrimeReact
+import Cards from "../components/Cardss";
 
 function Ps() {
   const location = useLocation();
@@ -23,10 +24,12 @@ function Ps() {
   const [packetData, setPacketData] = useState([]);
   const [countData, setCountData] = useState();
   const [totalPacket, setTotalPacket] = useState({
-    rstClient: 0,
-    rstServer: 0,
-    txCount: 0,
-    rxCount: 0,
+    rstClientHttp: 0,
+    rstServerHttp: 0,
+    rstClientTls: 0,
+    rstServerTls: 0,
+    rxHTTPCount: 0,
+    rxTLSCount: 0,
   }); // For card total
   const [first, setFirst] = useState(0);
   const [pageSize, setPageSize] = useState(60);
@@ -38,6 +41,17 @@ function Ps() {
 
   const fetchInitialData = async () => {
     try {
+      // Fetch Policy Server info
+      const policyServerResponse = await axios.get(
+        `${process.env.REACT_APP_BASE_URL}/ps/psid/${id}`
+      );
+      const policyServerData = policyServerResponse.data;
+
+      setPolicyServer({
+        id: policyServerData.id,
+        name: policyServerData.name,
+        location: policyServerData.location,
+      });
       //setInitialLoading(true); // Set initial loading to true
 
       // Fetch total packet data
@@ -46,9 +60,10 @@ function Ps() {
       );
       const totalData = totalResponse.data;
       setTotalPacket({
-        rstClient: formatNumber(totalData.psPackets.rstClient),
-        rstServer: formatNumber(totalData.psPackets.rstServer),
-        txCount: formatNumber(totalData.psPackets.tx_o_count),
+        rstClientHttp: formatNumber(totalData.psPackets.rstClientHttp),
+        rstServerHttp: formatNumber(totalData.psPackets.rstServerHttp),
+        rstClientTls: formatNumber(totalData.psPackets.rstClientTls),
+        rstServerTls: formatNumber(totalData.psPackets.rstServerTls),
         rxHTTPCount: formatNumber(totalData.psPackets.rx_i_http_count),
         rxTLSCount: formatNumber(totalData.psPackets.rx_i_tls_count),
       });
@@ -78,18 +93,6 @@ function Ps() {
         setPacketData([{ message: "No Ps Packets found" }]);
       }
 
-      // Fetch Policy Server info
-      const policyServerResponse = await axios.get(
-        `${process.env.REACT_APP_BASE_URL}/ps/psid/${id}`
-      );
-      const policyServerData = policyServerResponse.data;
-
-      setPolicyServer({
-        id: policyServerData.id,
-        name: policyServerData.name,
-        location: policyServerData.location,
-      });
-
       setInitialLoading(false); // Set initial loading to false after data is fetched
     } catch (error) {
       console.error("Error fetching initial data: ", error);
@@ -105,9 +108,10 @@ function Ps() {
       );
       const totalData = totalResponse.data;
       setTotalPacket({
-        rstClient: formatNumber(totalData.psPackets.rstClient),
-        rstServer: formatNumber(totalData.psPackets.rstServer),
-        txCount: formatNumber(totalData.psPackets.tx_o_count),
+        rstClientHttp: formatNumber(totalData.psPackets.rstClientHttp),
+        rstServerHttp: formatNumber(totalData.psPackets.rstServerHttp),
+        rstClientTls: formatNumber(totalData.psPackets.rstClientTls),
+        rstServerTls: formatNumber(totalData.psPackets.rstServerTls),
         rxHTTPCount: formatNumber(totalData.psPackets.rx_i_http_count),
         rxTLSCount: formatNumber(totalData.psPackets.rx_i_tls_count),
       });
@@ -253,7 +257,7 @@ function Ps() {
             <p className="text-gray-700 font-['Helvetica'] text-lg font-bold ">
               Status
             </p>
-            <div className="w-4 h-4 text-gray-700 text-2xl font-normal font-['Helvetica'] mt-3 ">
+            <div className="w-4 h-4 text-red-primary text-2xl font-normal font-['Helvetica'] mt-3 ">
               Policy Server
             </div>
             <div className="w-4 h-4 text-black-700 text-5xl font-bold font-['Helvetica'] mt-3">
@@ -266,71 +270,78 @@ function Ps() {
               Location: {policyServer.location}
             </div>
           </header>
-          <div className="flex flex-row mr-10">
-            <div className="flex flex-row mr-10">
-              <div className="mr-2">
-                <Card
-                  hitType="Reset Client Hit"
-                  number={totalPacket.rstClient}
-                  packet="Packet"
-                />
-              </div>
-              <div className="mr-2">
-                <Card
-                  hitType="Reset Server Hit"
-                  number={totalPacket.rstServer}
-                  packet="Packet"
-                />
-              </div>
-              <div className="mr-2">
-                <Card
-                  hitType="TX Count"
-                  number={totalPacket.txCount}
-                  packet="Packet"
-                />
-              </div>
-              <div className="mr-2">
-                <Card
-                  hitType="RX HTTP Count"
+          <div className="overflow-x-auto w-screen-lg ">
+            <div className="flex justify-between pt-4 pb-4">
+              <div className="flex space-x-5 pr-5">
+                <Cards
+                  hitType="HTTP Count"
                   number={totalPacket.rxHTTPCount}
                   packet="Packet"
                 />
-              </div>
-              <div className="mr-2">
-                <Card
-                  hitType="RX TLS Count"
+                <Cards
+                  hitType="TLS Count"
                   number={totalPacket.rxTLSCount}
+                  packet="Packet"
+                />
+                <Cards
+                  hitType="Reset Client HTTP"
+                  number={totalPacket.rstClientHttp}
+                  packet="Packet"
+                />
+                <Cards
+                  hitType="Reset Server HTTP"
+                  number={totalPacket.rstServerHttp}
+                  packet="Packet"
+                />
+                <Cards
+                  hitType="Reset Client TLS"
+                  number={totalPacket.rstClientTls}
+                  packet="Packet"
+                />
+                <Cards
+                  hitType="Reset Server TLS"
+                  number={totalPacket.rstServerTls}
                   packet="Packet"
                 />
               </div>
             </div>
           </div>
-          <div className="mt-10 mr-10 shadow-sm">
+          <div className=" mr-10 shadow-sm">
             <LineChart
-              title={chartLoading ? "" : "Reset Client Hit"}
+              title={chartLoading ? "" : "Reset Client HTTP"}
               packetData={packetData.map((data) => ({
                 time: data.time,
-                value: data.rstClient,
+                value: data.rstClient_http,
               }))}
               loading={chartLoading} // pass loading state to LineChart
             />
           </div>
           <div className="mt-10 mr-10 shadow-sm">
             <LineChart
-              title={chartLoading ? "" : "Reset Server Hit"}
+              title={chartLoading ? "" : "Reset Server HTTP"}
               packetData={packetData.map((data) => ({
                 time: data.time,
-                value: data.rstServer,
+                value: data.rstServer_http,
               }))}
               loading={chartLoading} // pass loading state to LineChart
             />
           </div>
           <div className="mt-10 mr-10 shadow-sm">
             <LineChart
-              title={chartLoading ? "" : "TX Count"}
+              title={chartLoading ? "" : "Reset Client TLS"}
               packetData={packetData.map((data) => ({
                 time: data.time,
-                value: data.tx_o_count,
+                value: data.rstClient_tls,
+              }))}
+              loading={chartLoading} // pass loading state to LineChart
+            />
+          </div>
+          <div className="mt-10 mr-10 shadow-sm">
+            <LineChart
+              title={chartLoading ? "" : "Reset Server TLS"}
+              packetData={packetData.map((data) => ({
+                time: data.time,
+                value: data.rstServer_ls,
               }))}
               loading={chartLoading} // pass loading state to LineChart
             />
