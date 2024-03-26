@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import Card from "../components/Card";
+import Cards from "../components/Card";
 import LineChart from "../components/LineChart";
 import axios from "axios";
 import generateConfigFileContent from "../components/GenerateConfigFileContent";
 import ProgressSpinner from "../components/ProgressSpinner";
 import BlockedListTable from "../components/BlockedListTable"; // Import BlockedListTable component
 import { Paginator } from "primereact/paginator"; // Import Paginator component from PrimeReact
-import Cards from "../components/Cardss";
 
 function Ps() {
   const location = useLocation();
@@ -223,7 +222,7 @@ function Ps() {
   };
 
   return (
-    <div className="relative ml-3">
+    <div className="relative">
       {initialLoading && (
         <div className="fixed inset-0 flex items-center justify-center">
           <ProgressSpinner />
@@ -257,7 +256,7 @@ function Ps() {
             <p className="text-gray-700 font-['Helvetica'] text-lg font-bold ">
               Status
             </p>
-            <div className="w-4 h-4 text-red-primary text-2xl font-normal font-['Helvetica'] mt-3 ">
+            <div className="w-4 h-4 text-gray-600 text-2xl font-normal font-['Helvetica'] mt-3 ">
               Policy Server
             </div>
             <div className="w-4 h-4 text-black-700 text-5xl font-bold font-['Helvetica'] mt-3">
@@ -306,65 +305,67 @@ function Ps() {
               </div>
             </div>
           </div>
-          <div className=" mr-10 shadow-sm">
-            <LineChart
-              title={chartLoading ? "" : "Reset Client HTTP"}
-              packetData={packetData.map((data) => ({
-                time: data.time,
-                value: data.rstClient_http,
-              }))}
-              loading={chartLoading} // pass loading state to LineChart
-            />
-          </div>
-          <div className="mt-10 mr-10 shadow-sm">
-            <LineChart
-              title={chartLoading ? "" : "Reset Server HTTP"}
-              packetData={packetData.map((data) => ({
-                time: data.time,
-                value: data.rstServer_http,
-              }))}
-              loading={chartLoading} // pass loading state to LineChart
-            />
-          </div>
-          <div className="mt-10 mr-10 shadow-sm">
-            <LineChart
-              title={chartLoading ? "" : "Reset Client TLS"}
-              packetData={packetData.map((data) => ({
-                time: data.time,
-                value: data.rstClient_tls,
-              }))}
-              loading={chartLoading} // pass loading state to LineChart
-            />
-          </div>
-          <div className="mt-10 mr-10 shadow-sm">
-            <LineChart
-              title={chartLoading ? "" : "Reset Server TLS"}
-              packetData={packetData.map((data) => ({
-                time: data.time,
-                value: data.rstServer_ls,
-              }))}
-              loading={chartLoading} // pass loading state to LineChart
-            />
-          </div>
-          <div className="mt-10 mr-10 shadow-sm">
-            <LineChart
-              title={chartLoading ? "" : "RX HTTP Count"}
-              packetData={packetData.map((data) => ({
-                time: data.time,
-                value: data.rx_i_http_count,
-              }))}
-              loading={chartLoading} // pass loading state to LineChart
-            />
-          </div>
-          <div className="mt-10 mr-10 shadow-sm">
-            <LineChart
-              title={chartLoading ? "" : "RX TLS Count"}
-              packetData={packetData.map((data) => ({
-                time: data.time,
-                value: data.rx_i_tls_count,
-              }))}
-              loading={chartLoading} // pass loading state to LineChart
-            />
+          <div className="grid grid-cols-2 justify-around gap-y-4 w-full mt-2">
+            <div className="w-[47%] h-1/2 shadow-sm">
+              <LineChart
+                title={chartLoading ? "" : "Reset Client HTTP"}
+                packetData={packetData.map((data) => ({
+                  time: data.time,
+                  value: data.rstClient_http,
+                }))}
+                loading={chartLoading} // pass loading state to LineChart
+              />
+            </div>
+            <div className="w-[47%] h-1/2 shadow-sm">
+              <LineChart
+                title={chartLoading ? "" : "Reset Server HTTP"}
+                packetData={packetData.map((data) => ({
+                  time: data.time,
+                  value: data.rstServer_http,
+                }))}
+                loading={chartLoading} // pass loading state to LineChart
+              />
+            </div>
+            <div className="w-[47%] h-1/2 shadow-sm">
+              <LineChart
+                title={chartLoading ? "" : "Reset Client TLS"}
+                packetData={packetData.map((data) => ({
+                  time: data.time,
+                  value: data.rstClient_tls,
+                }))}
+                loading={chartLoading} // pass loading state to LineChart
+              />
+            </div>
+            <div className="w-[47%] h-1/2 shadow-sm">
+              <LineChart
+                title={chartLoading ? "" : "Reset Server TLS"}
+                packetData={packetData.map((data) => ({
+                  time: data.time,
+                  value: data.rstServer_tls,
+                }))}
+                loading={chartLoading} // pass loading state to LineChart
+              />
+            </div>
+            <div className="w-[47%] h-1/2 shadow-sm">
+              <LineChart
+                title={chartLoading ? "" : "RX HTTP Count"}
+                packetData={packetData.map((data) => ({
+                  time: data.time,
+                  value: data.rx_i_http_count,
+                }))}
+                loading={chartLoading} // pass loading state to LineChart
+              />
+            </div>
+            <div className="w-[47%] h-1/2 shadow-sm">
+              <LineChart
+                title={chartLoading ? "" : "RX TLS Count"}
+                packetData={packetData.map((data) => ({
+                  time: data.time,
+                  value: data.rx_i_tls_count,
+                }))}
+                loading={chartLoading} // pass loading state to LineChart
+              />
+            </div>
           </div>
           <Paginator
             first={first}
@@ -373,7 +374,7 @@ function Ps() {
             onPageChange={onPageChange}
             template={{ layout: "PrevPageLink CurrentPageReport NextPageLink" }}
           />
-          <div className="mt-10 mr-10 shadow-sm">
+          <div className="w-full pt-10 pr-10 shadow-sm">
             <BlockedListTable id={id} />
           </div>
         </>

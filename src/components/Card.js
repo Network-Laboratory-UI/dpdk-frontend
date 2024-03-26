@@ -1,31 +1,20 @@
 import React from "react";
 
-function Card({hitType, number, packet}) {
+const Cards = ({ hitType, number, packet }) => {
   return (
     <div
-      className="w-72 h-80 relative"
-      style={{
-        margin: "auto", // Set the margin to auto to center the card
-      }}
+      style={{ borderRadius: "10px" }}
+      className="shadow-lg container p-4 w-56 h-32 bg-white-primary"
     >
-      <div className="w-72 h-80 mt-5 absolute bg-white rounded-lg shadow-lg hover:shadow-2xl">
-        <div className="mt-5 absolute text-center text-black text-xl font-medium w-full">
-          {hitType}
-        </div>
-        <div className="w-44 h-44 left-14 top-20 absolute flex justify-center items-center">
-          <div className="w-44 h-44 relative flex flex-col justify-start items-start">
-            <div className="w-44 h-44 relative flex justify-center items-center bg-[#CDDEFF] rounded-full">
-              <div className="text-center text-black text-2xl font-normal">
-                <span>{number}</span>
-                <br />
-                <span>{packet}</span>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="row">
+        <h1 className="text-black text-lg font-['Helvetica']">{hitType}</h1>
+        <h2 className="text-2xl font-['Helvetica'] font-bold text-red-primary">
+          {number}
+        </h2>
+        <h1 className="text-gray-700 text-base font-['Helvetica']">{packet}</h1>
       </div>
     </div>
   );
-}
+};
 
-export default Card;
+export default Cards;

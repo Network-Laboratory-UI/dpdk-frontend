@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import Card from "../components/Card";
+import Cards from "../components/Card";
 import LineChart from "../components/LineChart";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -235,7 +235,7 @@ function Npb() {
   };
 
   return (
-    <div className="relative ml-3">
+    <div className="relative">
       {initialLoading && (
         <div className="fixed inset-0 flex items-center justify-center">
           <ProgressSpinner />
@@ -269,7 +269,7 @@ function Npb() {
             <p className="text-gray-700 font-['Helvetica'] text-lg font-bold ">
               Status
             </p>
-            <div className="w-4 h-4 text-red-primary text-2xl font-normal font-['Helvetica'] mt-3 ">
+            <div className="w-4 h-4 text-gray-600 text-2xl font-normal font-['Helvetica'] mt-3 ">
               Packet Broker
             </div>
             <div className="w-4 h-4 text-black-700 text-5xl font-bold font-['Helvetica'] mt-3">
@@ -282,92 +282,88 @@ function Npb() {
               Location: {packetBroker.location}
             </div>
           </header>
-          <div className="flex flex-row mr-10">
-            <div className="mr-2">
-              <Card
-                hitType="HTTP Count"
-                number={totalPacket.httpCount}
-                packet="Packet"
-              />
-            </div>
-            <div className="mr-2">
-              <Card
-                hitType="HTTPS Count"
-                number={totalPacket.httpsCount}
-                packet="Packet"
-              />
-            </div>
-            <div className="mr-2">
-              <Card
-                hitType="TX HTTP Count"
-                number={totalPacket.txHttpCount}
-                packet="Packet"
-              />
-            </div>
-            <div className="mr-2">
-              <Card
-                hitType="TX TLS Count"
-                number={totalPacket.txTlsCount}
-                packet="Packet"
-              />
-            </div>
-            <div className="mr-2">
-              <Card
-                hitType="RX Count"
-                number={totalPacket.rxCount}
-                packet="Packet"
-              />
+          <div className="overflow-x-auto w-screen-lg ">
+            <div className="flex justify-between pt-4 pb-4">
+              <div className="flex space-x-5 pr-5">
+                <Cards
+                  hitType="HTTP Count"
+                  number={totalPacket.httpCount}
+                  packet="Packet"
+                />
+                <Cards
+                  hitType="HTTPS Count"
+                  number={totalPacket.httpsCount}
+                  packet="Packet"
+                />
+                <Cards
+                  hitType="TX HTTP Count"
+                  number={totalPacket.txHttpCount}
+                  packet="Packet"
+                />
+                <Cards
+                  hitType="TX TLS Count"
+                  number={totalPacket.txTlsCount}
+                  packet="Packet"
+                />
+                <Cards
+                  hitType="RX Count"
+                  number={totalPacket.rxCount}
+                  packet="Packet"
+                />
+              </div>
             </div>
           </div>
-          <div className="mt-10 mr-10 shadow-sm">
-            <LineChart
-              title={chartLoading ? "" : "HTTP Count"}
-              packetData={packetData.map((data) => ({
-                time: data.time,
-                value: data.http_count,
-              }))}
-              loading={chartLoading}
-            />
-          </div>
-          <div className="mt-10 mr-10 shadow-sm">
-            <LineChart
-              title={chartLoading ? "" : "HTTPS Count"}
-              packetData={packetData.map((data) => ({
-                time: data.time,
-                value: data.https_count,
-              }))}
-              loading={chartLoading}
-            />
-          </div>
-          <div className="mt-10 mr-10 shadow-sm">
-            <LineChart
-              title={chartLoading ? "" : "TX HTTP Count"}
-              packetData={packetData.map((data) => ({
-                time: data.time,
-                value: data.tx_o_http_count,
-              }))}
-              loading={chartLoading}
-            />
-          </div>
-          <div className="mt-10 mr-10 shadow-sm">
-            <LineChart
-              title={chartLoading ? "" : "TX TLS Count"}
-              packetData={packetData.map((data) => ({
-                time: data.time,
-                value: data.tx_o_tls_count,
-              }))}
-              loading={chartLoading}
-            />
-          </div>
-          <div className="mt-10 mr-10 mb-20 shadow-sm">
-            <LineChart
-              title={chartLoading ? "" : "RX Count"}
-              packetData={packetData.map((data) => ({
-                time: data.time,
-                value: data.rx_i_count,
-              }))}
-              loading={chartLoading}
-            />
+          <div className="grid grid-cols-2 justify-around w-full gap-y-4">
+            <div className="w-[47%] h-1/2 shadow-sm">
+              <LineChart
+                title={chartLoading ? "" : "HTTP Count"}
+                packetData={packetData.map((data) => ({
+                  time: data.time,
+                  value: data.http_count,
+                }))}
+                loading={chartLoading}
+              />
+            </div>
+            <div className="w-[47%] h-1/2 shadow-sm">
+              <LineChart
+                title={chartLoading ? "" : "HTTPS Count"}
+                packetData={packetData.map((data) => ({
+                  time: data.time,
+                  value: data.https_count,
+                }))}
+                loading={chartLoading}
+              />
+            </div>
+            <div className="w-[47%] h-1/2 shadow-sm">
+              <LineChart
+                title={chartLoading ? "" : "TX HTTP Count"}
+                packetData={packetData.map((data) => ({
+                  time: data.time,
+                  value: data.tx_o_http_count,
+                }))}
+                loading={chartLoading}
+              />
+            </div>
+            <div className="w-[47%] h-1/2 shadow-sm">
+              <LineChart
+                title={chartLoading ? "" : "TX TLS Count"}
+                packetData={packetData.map((data) => ({
+                  time: data.time,
+                  value: data.tx_o_tls_count,
+                }))}
+                loading={chartLoading}
+              />
+            </div>
+            <div className="w-[47%] h-1/2 shadow-sm">
+              <LineChart
+                title={chartLoading ? "" : "RX Count"}
+                packetData={packetData.map((data) => ({
+                  time: data.time,
+                  value: data.rx_i_count,
+                }))}
+                loading={chartLoading}
+              />
+            </div>
           </div>
           <Paginator
             first={first}

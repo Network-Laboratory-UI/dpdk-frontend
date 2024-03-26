@@ -1,121 +1,103 @@
 import React, { useEffect, useState } from "react";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-} from "chart.js";
-import { Line } from "react-chartjs-2";
-import SkeletonLineChart from "./SkeletonLineChart"; // Import the SkeletonLineChart component
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-);
+import Chart from "react-apexcharts";
+import SkeletonLineChart from "./SkeletonLineChart";
 
 const LineChart = ({ title, packetData, loading }) => {
   const [chartData, setChartData] = useState({
-    labels: [],
-    datasets: [
+    series: [
       {
-        label: title,
+        name: title,
         data: [],
-        borderColor: "rgb(255, 99, 132)",
-        backgroundColor: "rgba(255, 99, 132, 0.5)",
-        cubicInterpolationMode: "monotone", // Rounded lines
-        fill: true, // This enables the fill below the line
       },
     ],
-  });
-
-  useEffect(() => {
-    if (packetData && packetData.length > 0) {
-      const latestData = packetData.slice(-60); // Display only the latest 50 data points
-      const timeLabels = latestData.map((data) =>
-        new Date(data.time).toLocaleTimeString()
-      );
-      const httpValues = latestData.map((data) => data.value);
-
-      setChartData((prevData) => ({
-        ...prevData,
-        labels: timeLabels,
-        datasets: [
-          {
-            ...prevData.datasets[0], // Spread the existing properties
-            data: httpValues,
-          },
-        ],
-      }));
-    }
-  }, [packetData]);
-
-  const options = {
-    responsive: true,
-    plugins: {
+    options: {
+      chart: {
+        type: "line",
+        height: 350,
+      },
+      xaxis: {
+        categories: [],
+      },
+      colors: ["#FF5959"], // Adjust line color
+      title: {
+        text: "Timeline",
+        align: "left",
+        style: {
+          fontSize: "20px",
+          fontFamily: "Helvetica",
+        },
+      },
       legend: {
         position: "top",
-        align: "end",
-      },
-      title: {
-        display: true,
-        text: "Timeline",
-        align: "start",
-        font: {
-          size: 30,
-          family: "Helvetica",
-        },
+        horizontalAlign: "right",
       },
       tooltip: {
         intersect: false,
-        backgroundColor: "rgba(0, 0, 0, 0.8)", // Change the background color
-        titleColor: "white", // Change the title color
-        titleFont: { size: 14 }, // Change the title font size
-        bodyColor: "white", // Change the body color
-        bodyFont: { size: 10 }, // Change the body font size
-        borderColor: "white", // Change the border color
-        borderWidth: 1, // Change the border width
-        callbacks: {
-          title: function (context) {
-            return context[0].label; // Customize the title
-          },
-          label: function (context) {
-            return context.dataset.label + ": " + context.parsed.y; // Customize the label
-          },
-        },
+        shared: true,
+      },
+      grid: {
+        borderColor: "#f1f1f1", // Adjust grid color
+      },
+      stroke: {
+        curve: "smooth", // Make the line smooth and dynamic
+        width: 2, // Adjust line width
       },
     },
-    scales: {
-      x: {
-        grid: {
-          display: false, // Hide x-axis grid
+  });
+
+  useEffect(() => {
+    if (packetData === null) {
+      setChartData({
+        series: [
+          {
+            name: title,
+            data: [0],
+          },
+        ],
+        options: {
+          ...chartData.options,
+          xaxis: {
+            categories: ['No data'],
+          },
         },
-      },
-      y: {
-        grid: {
-          display: true, // Show y-axis grid
-          color: "rgba(0, 0, 0, 0.1)", // Adjust the color of the horizontal lines
+      });
+    } else if (packetData && packetData.length > 0) {
+      const latestData = packetData.slice(-60); // Display only the latest 50 data points
+      const timeLabels = latestData.map((data) =>
+        data && data.time ? new Date(data.time).toLocaleTimeString() : 'No time data'
+      );
+      const httpValues = latestData.map((data) => data && data.value ? data.value : 0);
+
+      setChartData({
+        series: [
+          {
+            name: title,
+            data: httpValues,
+          },
+        ],
+        options: {
+          ...chartData.options,
+          xaxis: {
+            categories: timeLabels,
+          },
         },
-      },
-    },
-  };
+      });
+    }
+  }, [packetData, title]); // Added 'title' as dependency
 
   return (
     <div>
       <h3>{title}</h3>
       {loading ? (
-        <SkeletonLineChart /> // Render skeleton loading state if loading is true
+        <SkeletonLineChart />
       ) : (
         <div className="chart-container">
-          <Line data={chartData} options={options} />
+          <Chart
+            options={chartData.options}
+            series={chartData.series}
+            type="line"
+            height={350}
+          />
         </div>
       )}
     </div>
