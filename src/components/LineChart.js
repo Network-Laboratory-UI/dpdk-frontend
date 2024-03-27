@@ -57,16 +57,17 @@ const LineChart = ({ title, packetData, loading }) => {
         options: {
           ...chartData.options,
           xaxis: {
-            categories: ['No data'],
+            categories: ["No data"],
           },
         },
       });
     } else if (packetData && packetData.length > 0) {
-      const latestData = packetData.slice(-60); // Display only the latest 50 data points
-      const timeLabels = latestData.map((data) =>
-        data && data.time ? new Date(data.time).toLocaleTimeString() : 'No time data'
+      const timeLabels = packetData.map((data) =>
+        data && data.time ? new Date(data.time).toLocaleTimeString() : ""
       );
-      const httpValues = latestData.map((data) => data && data.value ? data.value : 0);
+      const httpValues = packetData.map((data) =>
+        data && data.value ? data.value : 0
+      );
 
       setChartData({
         series: [

@@ -43,7 +43,11 @@ function Sidebar() {
   return (
     <div
       className="sticky top-0 bg-blue-primary h-screen text-white flex flex-col font-helvetica"
-      onMouseEnter={() => setTimeout(() => {setHidden(false)},20)}
+      onMouseEnter={() =>
+        setTimeout(() => {
+          setHidden(false);
+        }, 20)
+      }
       onMouseLeave={() => setHidden(true)}
     >
       <div className="h-[10%] flex items-center justify-center p-4">
@@ -71,10 +75,12 @@ function Sidebar() {
           />
         </svg>
         <div className={`${hidden ? "hidden" : "block"}`}>
-          <h2 className="transition ease-in-out duration-200 text-xl font-bold ml-4">Dashboard</h2>
+          <h2 className="transition ease-in-out duration-200 text-xl font-bold ml-4">
+            Dashboard
+          </h2>
         </div>
       </div>
-      <div className="h-[70%] py-2 w-full px-3">
+      <div className="h-[80%] py-2 w-full px-3">
         <ul className="">
           <li
             className={`flex items-center group-hover:justify-start px-2 py-2 ${
@@ -111,7 +117,11 @@ function Sidebar() {
                 </clipPath>
               </defs>
             </svg>
-            <div className={`transition-all duration-150 ${hidden ? "hidden" : "block"}`}>
+            <div
+              className={`transition-all duration-150 ${
+                hidden ? "hidden" : "block"
+              }`}
+            >
               <h4 className={"ml-4 text-white-primary"}>Home</h4>
             </div>
           </li>
@@ -147,7 +157,11 @@ function Sidebar() {
                 </clipPath>
               </defs>
             </svg>
-            <div className={`transition-all duration-150 ${hidden ? "hidden" : "block"}`}>
+            <div
+              className={`transition-all duration-150 ${
+                hidden ? "hidden" : "block"
+              }`}
+            >
               <h4 className={"ml-4 text-white-primary"}>NPB</h4>
             </div>
           </li>
@@ -190,7 +204,7 @@ function Sidebar() {
           </li>
         </ul>
       </div>
-      <div className="h-[20%] py-4 w-full px-3 content-end">
+      <div className="h-[10%] py-4 w-full px-3 content-end">
         <div className="flex items-center group-hover:justify-start px-2 py-2 mt-auto">
           <button onClick={handleLogout}>
             <svg

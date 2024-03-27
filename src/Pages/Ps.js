@@ -31,7 +31,7 @@ function Ps() {
     rxTLSCount: 0,
   }); // For card total
   const [first, setFirst] = useState(0);
-  const [pageSize, setPageSize] = useState(60);
+  const [pageSize, setPageSize] = useState(120);
   const [currentPage, setCurrentPage] = useState(1);
   const token = localStorage.getItem("token");
   if (!token) {
@@ -246,7 +246,7 @@ function Ps() {
               <div className="h-full text-gray-600 text-2xl font-normal font-['Helvetica'] w-5/6">
                 Policy Server
               </div>
-              <div className="w-1/6">
+              <div className="w-1/6 flex justify-end">
                 <button
                   onClick={handleDownloadConfig}
                   className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded flex items-center font-['Helvetica'] font-bold"
