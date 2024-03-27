@@ -5,10 +5,12 @@ import Sidebar from "../components/Sidebar";
 const Dashboard = () => {
   return (
     <div className="flex">
-      <div className="static top-0 w-1/6">
+      <div className="fixed group hover:w-1/6 top-0 w-[5%] z-50 transition-all duration-100">
         <Sidebar />
       </div>
-      <div className="w-5/6 pl-5">
+      <div className="static top-0 w-[5%]">
+      </div>
+      <div className="w-[95%] px-5">
         <Outlet />
       </div>
     </div>

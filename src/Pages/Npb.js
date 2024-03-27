@@ -243,20 +243,6 @@ function Npb() {
       )}
       {!initialLoading && (
         <>
-          <div className="absolute top-0 right-0 mt-10 mr-10 flex">
-            <button
-              onClick={handleDownloadConfig}
-              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded flex items-center font-['Helvetica'] font-bold"
-            >
-              <span className="mr-2">Download Config</span>
-              <img
-                src="/download_logo.svg"
-                alt="Download Icon"
-                className="h-5"
-                style={{ fill: "white" }}
-              />
-            </button>
-          </div>
           <header>
             <div className="flex items-center space-x-1 mt-3">
               <p className="text-gray-400 font-['Helvetica'] text-lg font-normal">
@@ -269,13 +255,29 @@ function Npb() {
             <p className="text-gray-700 font-['Helvetica'] text-lg font-bold ">
               Status
             </p>
-            <div className="w-4 h-4 text-gray-600 text-2xl font-normal font-['Helvetica'] mt-3 ">
-              Packet Broker
+            <div className="flex">
+              <div className="h-full text-gray-600 text-2xl font-normal font-['Helvetica'] w-5/6">
+                Packet Broker
+              </div>
+              <div className="w-1/6">
+                <button
+                  onClick={handleDownloadConfig}
+                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded flex items-center font-['Helvetica'] font-bold"
+                >
+                  <span className="mr-2">Download Config</span>
+                  <img
+                    src="/download_logo.svg"
+                    alt="Download Icon"
+                    className="h-5"
+                    style={{ fill: "white" }}
+                  />
+                </button>
+              </div>
             </div>
-            <div className="w-4 h-4 text-black-700 text-5xl font-bold font-['Helvetica'] mt-3">
+            <div className="w-full h-full text-black-700 text-5xl font-bold font-['Helvetica']">
               {packetBroker.name}
             </div>
-            <p className="text-gray-400 w-4 font-['Helvetica'] text-sm font-bold mt-5">
+            <p className="text-gray-400 w-full h-full font-['Helvetica'] text-sm font-bold pt-1">
               ID: {packetBroker.id}
             </p>
             <div className="text-gray-700 text-base font-normal font-['Helvetica'] italic">
